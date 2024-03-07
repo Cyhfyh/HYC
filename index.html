@@ -42,10 +42,38 @@
         #toggleButton {
             position: fixed;
             bottom: 10px;
-            left: 10px;
+            left: 10px; /* 调整位置到左下角 */
             padding: 10px;
             font-size: 24px;
             cursor: pointer;
+            background: none; /* 移除背景 */
+            border: none; /* 移除边框 */
+            color: #fff; /* 文本颜色 */
+            transition: transform 0.3s ease; /* 添加过渡效果 */
+            cursor: pointer; /* 鼠标指针变为手指形状 */
+        }
+        #toggleButton:hover {
+            transform: scale(1.1); /* 悬停时放大图标 */
+        }
+        #toggleButton:focus {
+            outline: none; /* 移除焦点样式 */
+        }
+        #alertButton {
+            position: fixed;
+            bottom: 10px;
+            right: 10px; /* 调整位置到右下角 */
+            padding: 10px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #fff; /* 文本颜色 */
+            transition: transform 0.3s ease; /* 添加过渡效果 */
+            cursor: pointer; /* 鼠标指针变为手指形状 */
+        }
+        #alertButton:hover {
+            transform: scale(1.1); /* 悬停时放大图标 */
+        }
+        #alertButton:focus {
+            outline: none; /* 移除焦点样式 */
         }
         /* 浅色模式下的样式 */
         body.light-mode {
@@ -71,6 +99,11 @@
             toggleButton.textContent = body.classList.contains('light-mode') ? '☀️' : '🌙';
         }
 
+        // 弹出提示框函数
+        function showAlert(message) {
+            alert(message);
+        }
+
         // 回车键搜索事件
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Enter') {
@@ -92,7 +125,13 @@
         <input type="text" id="searchText" placeholder="输入搜索词">
         <button onclick="searchOnBaidu()">搜索</button>
     </div>
+    <!-- 弹出提示框按钮 -->
+    <div id="alertButton" onclick="showAlert('作者：Cyhfyh\n版权归作者所有')">❗</div>
     <!-- 切换背景颜色按钮 -->
     <div id="toggleButton" onclick="toggleBackground()">🌙</div>
+    <script>
+        // 设置默认为深色模式
+        document.body.classList.remove('light-mode');
+    </script>
 </body>
 </html>
