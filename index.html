@@ -1,29 +1,69 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Baidu 搜索</title>
+    <title>Baidu</title>
     <style>
-        /* 添加样式使搜索框居中显示 */
         body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
+            height: 100vh; /* 让body占据整个视窗高度 */
+            background-color: #333; /* 默认深色背景 */
+            color: #fff; /* 默认文本颜色 */
         }
-        h1 {
-            margin-right: 10px; /* 设置欢迎语和搜索框的间距 */
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: row; /* 水平方向排列 */
+            position: relative;
+            top: -25vh; /* 将容器上移25%视窗高度 */
+        }
+        h1, input[type="text"], button {
+            margin-right: 10px;
+        }
+        input[type="text"], button {
+            padding: 12px;
+            font-size: 16px;
+            vertical-align: middle;
+            color: #fff; /* 默认按钮和输入框文本颜色 */
+            background-color: #555; /* 默认按钮和输入框背景色 */
+            border: none; /* 移除边框 */
+            border-radius: 5px; /* 添加圆角 */
+            transition: background-color 0.3s ease, transform 0.3s ease; /* 添加过渡效果 */
         }
         input[type="text"] {
-            width: 300px; /* 设置搜索框宽度 */
-            padding: 10px;
-            font-size: 16px;
+            width: 300px;
         }
         button {
-            padding: 10px 20px;
-            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 添加阴影效果 */
+        }
+        button:active {
+            transform: translateY(2px); /* 按钮按下时向下移动2px */
+        }
+        #toggleButton {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            padding: 10px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        /* 浅色模式下的样式 */
+        body.light-mode {
+            background-color: #f0f0f0; /* 浅色背景 */
+            color: #333; /* 文本颜色变为黑色 */
+        }
+        body.light-mode input[type="text"], body.light-mode button {
+            color: #333; /* 输入框和按钮文本颜色变为黑色 */
+            background-color: #fff; /* 输入框和按钮背景色变为白色 */
         }
     </style>
     <script>
@@ -32,14 +72,41 @@
             var searchUrl = 'https://www.baidu.com/s?wd=' + encodeURIComponent(searchText);
             window.open(searchUrl, '_blank');
         }
+
+        function toggleBackground() {
+            var body = document.body;
+            body.classList.toggle('light-mode');
+            var toggleButton = document.getElementById('toggleButton');
+            toggleButton.textContent = body.classList.contains('light-mode') ? '☀️' : '🌙';
+        }
+
+        // 回车键搜索事件
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                searchOnBaidu();
+            }
+        });
+
+        // 在页面加载时检查当前模式并设置切换按钮的图标
+        document.addEventListener('DOMContentLoaded', function() {
+            var body = document.body;
+            var toggleButton = document.getElementById('toggleButton');
+            toggleButton.textContent = body.classList.contains('light-mode') ? '☀️' : '🌙';
+        });
     </script>
 </head>
-<body>
-    <h1>百度</h1>
-    <!-- 将搜索框和按钮包裹在一个 div 中，使其居中显示 -->
-    <div>
-        <input type="text" id="searchText" placeholder="请输入搜索内容">
+<body class="light-mode">
+    <div class="container">
+        <h1>Baidu</h1>
+        <input type="text" id="searchText" placeholder="输入搜索词">
         <button onclick="searchOnBaidu()">搜索</button>
     </div>
+    <!-- 切换背景颜色按钮 -->
+    <div id="toggleButton" onclick="toggleBackground()">🌙</div>
+
+    <script>
+        // 在页面加载时切换到深色模式
+        document.body.classList.remove('light-mode');
+    </script>
 </body>
 </html>
