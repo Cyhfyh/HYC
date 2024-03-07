@@ -10,23 +10,14 @@
             text-align: center;
             margin: 0;
             padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh; /* 让body占据整个视窗高度 */
             background-color: #333; /* 默认深色背景 */
             color: #fff; /* 默认文本颜色 */
         }
         .container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: row; /* 水平方向排列 */
-            position: relative;
-            top: -25vh; /* 将容器上移25%视窗高度 */
+            margin-top: 25vh; /* 将容器上移，位于整体页面高度的三分之二位置 */
         }
         h1, input[type="text"], button {
-            margin-right: 10px;
+            margin-bottom: 10px;
         }
         input[type="text"], button {
             padding: 12px;
@@ -95,7 +86,7 @@
         });
     </script>
 </head>
-<body class="light-mode">
+<body>
     <div class="container">
         <h1>Baidu</h1>
         <input type="text" id="searchText" placeholder="输入搜索词">
@@ -103,10 +94,5 @@
     </div>
     <!-- 切换背景颜色按钮 -->
     <div id="toggleButton" onclick="toggleBackground()">🌙</div>
-
-    <script>
-        // 在页面加载时切换到深色模式
-        document.body.classList.remove('light-mode');
-    </script>
 </body>
 </html>
