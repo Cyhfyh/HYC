@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baidu 搜索</title>
+    <style>
+        /* 添加样式使搜索框居中显示 */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        h1 {
+            margin-right: 10px; /* 设置欢迎语和搜索框的间距 */
+        }
+        input[type="text"] {
+            width: 300px; /* 设置搜索框宽度 */
+            padding: 10px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+    </style>
+    <script>
+        function searchOnBaidu() {
+            var searchText = document.getElementById('searchText').value;
+            var searchUrl = 'https://www.baidu.com/s?wd=' + encodeURIComponent(searchText);
+            window.open(searchUrl, '_blank');
+        }
+    </script>
+</head>
+<body>
+    <h1>百度</h1>
+    <!-- 将搜索框和按钮包裹在一个 div 中，使其居中显示 -->
+    <div>
+        <input type="text" id="searchText" placeholder="请输入搜索内容">
+        <button onclick="searchOnBaidu()">搜索</button>
+    </div>
+</body>
+</html>
