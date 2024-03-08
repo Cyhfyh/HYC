@@ -49,26 +49,27 @@
             transition: transform 0.3s ease; /* 添加过渡效果 */
             cursor: pointer; /* 鼠标指针变为手指形状 */
             position: fixed; /* 设置为固定定位，以便在页面上固定位置 */
+		
         }
         #toggleButton {
-            bottom: 10px;
-            left: 10px;
-        }
-        #changeColorButton {
-            bottom: 10px;
-            left: 60px;
-        }
-        #alertButton {
-            bottom: 10px;
-            left: 110px;
-        }
-        #weatherButton {
             top: 10px;
             left: 10px;
         }
+        #changeColorButton {
+            top: 10px;
+            left: 60px;
+        }
+        #alertButton {
+            top: 10px;
+            left: 110px;
+        }
         #dateIcon {
-            top: 60px;
-            left: 10px;
+            top: 10px;
+            left: 160px;
+        }
+        #weatherButton {
+            top: 9px;
+            left: 210px;
         }
         #toggleButton:hover, #changeColorButton:hover, #alertButton:hover, #weatherButton:hover, #dateIcon:hover {
             transform: scale(1.1); /* 悬停时放大图标 */
@@ -122,10 +123,9 @@
     <!-- 天气查询按钮 -->
     <div id="weatherButton" class="icon" onclick="openWeatherPage()">⛅</div>
     <!-- 日期图标 -->
-    <div id="dateIcon">📅</div>
-
-    <!-- 颜色选择器 -->
-    <input type="color" id="colorPicker" style="display: none;" onchange="updateBackgroundColor()">
+    <div id="dateIcon" onclick="toggleDateDisplay()">📅</div>
+    <!-- 日期显示 -->
+    <div id="dateDisplay" style="display: none;"></div>
 
     <script>
         var currentSearchEngine = 'Baidu';
@@ -187,11 +187,71 @@
             document.body.style.backgroundColor = newColor;
         }
 
-        // 天气查询按钮
+        // 回车键搜索事件
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                searchOnSearchEngine();
+            }
+        });
+
+        // 页面加载时，加载用户偏好设置和自动切换搜索引擎
+        window.onload = function() {
+            var body = document.body;
+            var storedMode = localStorage.getItem('mode'); // 获取存储的模式
+            if (storedMode === 'light') {
+                body.classList.add('light-mode');
+                isLightMode = true;
+            } else {
+                isLightMode = false;
+            }
+
+            // 初始化切换搜索引擎为Baidu
+            toggleSearchEngine();
+			toggleSearchEngine();
+			// 默认显示日期
+			toggleDateDisplay();
+        };
+
+        // 页面关闭时，保存用户偏好设置
+        window.onbeforeunload = function() {
+            var body = document.body;
+            if (isLightMode) {
+                localStorage.setItem('mode', 'light');
+            } else {
+                localStorage.setItem('mode', 'dark');
+            }
+        };
+
+        // 更新日期显示
+        function updateDateDisplay() {
+            var dateDisplay = document.getElementById('dateDisplay');
+            var currentDate = new Date();
+            var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            dateDisplay.textContent = currentDate.toLocaleDateString('zh-CN', options);
+        }
+
+        // 打开天气查询页面
         function openWeatherPage() {
             var weatherUrl = 'https://www.msn.cn/zh-cn/weather/';
             window.open(weatherUrl, '_blank');
         }
+
+        // 切换日期显示
+        function toggleDateDisplay() {
+            var dateDisplay = document.getElementById('dateDisplay');
+            if (dateDisplay.style.display === 'none') {
+                dateDisplay.style.display = 'block';
+                updateDateDisplay();
+            } else {
+                dateDisplay.style.display = 'none';
+            }
+        }
+
+        // 在页面加载完毕后更新日期显示
+        window.addEventListener('load', function() {
+            updateDateDisplay();
+        });
+		
     </script>
 </body>
 </html>
