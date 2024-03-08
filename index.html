@@ -126,7 +126,9 @@
     <div id="dateIcon" onclick="toggleDateDisplay()">📅</div>
     <!-- 日期显示 -->
     <div id="dateDisplay" style="display: none;"></div>
-
+	<!-- 更改背景颜色按钮 -->
+	<input type="color" id="colorPicker" style="display: none;" onchange="updateBackgroundColor()">
+	
     <script>
         var currentSearchEngine = 'Baidu';
         var isLightMode = false; // 默认为深色模式
@@ -235,6 +237,12 @@
             var weatherUrl = 'https://www.msn.cn/zh-cn/weather/';
             window.open(weatherUrl, '_blank');
         }
+
+		// 打开天气查询页面
+		function openWeatherPage() {
+			var weatherUrl = 'https://www.msn.cn/zh-cn/weather/';
+			window.location.href = weatherUrl;
+		}
 
         // 切换日期显示
         function toggleDateDisplay() {
