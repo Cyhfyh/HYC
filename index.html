@@ -189,5 +189,45 @@
             }
         };
     </script>
+	
+	<!-- 天气查询按钮 -->
+<div id="weatherButton" class="icon" onclick="openWeatherPage()">⛅</div>
+
+<style>
+    /* 天气查询按钮样式 */
+    #weatherButton {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        padding: 10px;
+        font-size: 24px;
+        cursor: pointer;
+        background: none;
+        border: none;
+        color: #fff;
+        transition: transform 0.3s ease;
+        cursor: pointer;
+    }
+
+    /* 悬停时放大图标 */
+    #weatherButton:hover {
+        transform: scale(1.1);
+    }
+
+    /* 焦点样式 */
+    #weatherButton:focus {
+        outline: none;
+    }
+</style>
+
+<script>
+    // 打开天气查询页面
+    function openWeatherPage() {
+        var weatherUrl = 'https://weathernew.pae.baidu.com/weathernew/pc?query=%E6%8F%AD%E9%98%B3%E6%83%A0%E6%9D%A5%E5%A4%A9%E6%B0%94&srcid=4982&forecast=';
+        window.open(weatherUrl, '_blank');
+    }
+</script>
+
+	
 </body>
 </html>
