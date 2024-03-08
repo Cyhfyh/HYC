@@ -39,10 +39,8 @@
         button:active {
             transform: translateY(2px); /* 按钮按下时向下移动2px */
         }
-        #toggleButton, #changeColorButton {
+        #toggleButton, #changeColorButton, #alertButton {
             position: fixed;
-            bottom: 10px;
-            left: 10px; /* 调整位置到左下角 */
             padding: 10px;
             font-size: 24px;
             cursor: pointer;
@@ -52,27 +50,22 @@
             transition: transform 0.3s ease; /* 添加过渡效果 */
             cursor: pointer; /* 鼠标指针变为手指形状 */
         }
-        #toggleButton:hover, #changeColorButton:hover {
-            transform: scale(1.1); /* 悬停时放大图标 */
+        #toggleButton {
+            bottom: 10px;
+            left: 10px; /* 调整位置到左下角 */
         }
-        #toggleButton:focus, #changeColorButton:focus {
-            outline: none; /* 移除焦点样式 */
+        #changeColorButton {
+            bottom: 10px;
+            left: 60px;
         }
         #alertButton {
-            position: fixed;
             bottom: 10px;
             right: 10px; /* 调整位置到右下角 */
-            padding: 10px;
-            font-size: 24px;
-            cursor: pointer;
-            color: #fff; /* 文本颜色 */
-            transition: transform 0.3s ease; /* 添加过渡效果 */
-            cursor: pointer; /* 鼠标指针变为手指形状 */
         }
-        #alertButton:hover {
+        #toggleButton:hover, #changeColorButton:hover, #alertButton:hover {
             transform: scale(1.1); /* 悬停时放大图标 */
         }
-        #alertButton:focus {
+        #toggleButton:focus, #changeColorButton:focus, #alertButton:focus {
             outline: none; /* 移除焦点样式 */
         }
         /* 浅色模式下的样式 */
@@ -100,7 +93,7 @@
     <!-- 切换背景颜色按钮 -->
     <div id="toggleButton" onclick="toggleBackground()">🌙</div>
     <!-- 更改背景颜色按钮 -->
-    <div id="changeColorButton" onclick="changeBackgroundColorWithPicker()" style="left: 60px;">✨</div>
+    <div id="changeColorButton" onclick="changeBackgroundColorWithPicker()">✨</div>
     <!-- 弹出提示框按钮 -->
     <div id="alertButton" onclick="showAlert('点击搜索引擎名称以切换搜索引擎\n点击🌙或☀切换深浅色模式\n点击✨自定义背景颜色\n作者：Cyhfyh\n版权归作者所有')">❗</div>
     <!-- 颜色选择器 -->
@@ -108,7 +101,9 @@
 
     <script>
         var currentSearchEngine = 'Baidu';
+        var isLightMode = false; // 默认为深色模式
 
+        // 搜索功能
         function searchOnSearchEngine() {
             var searchText = document.getElementById('searchText').value;
             var searchUrl = '';
@@ -121,13 +116,18 @@
             window.location.href = searchUrl;
         }
 
+        // 切换背景颜色
         function toggleBackground() {
             var body = document.body;
-            body.classList.toggle('light-mode');
-            var toggleButton = document.getElementById('toggleButton');
-            toggleButton.textContent = body.classList.contains('light-mode') ? '☀️' : '🌙';
+            isLightMode = !isLightMode; // 切换深浅色模式
+            if (isLightMode) {
+                body.classList.add('light-mode');
+            } else {
+                body.classList.remove('light-mode');
+            }
         }
 
+        // 切换搜索引擎
         function toggleSearchEngine() {
             var searchEngineButton = document.getElementById('searchEngineButton');
             if (currentSearchEngine === 'Baidu') {
@@ -139,7 +139,7 @@
             }
         }
 
-        // 弹出提示框函数
+        // 弹出提示框
         function showAlert(message) {
             alert(message);
         }
@@ -150,38 +150,10 @@
             colorPicker.click(); // 触发颜色选择器的点击事件
         }
 
-        // 更新背景颜色和模式
+        // 更新背景颜色
         function updateBackgroundColor() {
             var newColor = document.getElementById('colorPicker').value;
             document.body.style.backgroundColor = newColor;
-            var body = document.body;
-            var toggleButton = document.getElementById('toggleButton');
-            // 如果新颜色为浅色，则添加 light-mode 类；否则移除
-            if (isLightColor(newColor)) {
-                body.classList.add('light-mode');
-                toggleButton.textContent = '☀️';
-            } else {
-                body.classList.remove('light-mode');
-                toggleButton.textContent = '🌙';
-            }
-        }
-
-        // 判断颜色是否为浅色
-        function isLightColor(color) {
-            // 将颜色转换为 RGB 格式
-            var rgb = hexToRgb(color);
-            // 根据 RGB 值判断是否为浅色
-            var brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
-            return brightness > 155; // 155 是一个经验值，您可以根据需要调整
-        }
-
-        // 将十六进制颜色转换为 RGB 格式
-        function hexToRgb(hex) {
-            var bigint = parseInt(hex.substring(1), 16);
-            var r = (bigint >> 16) & 255;
-            var g = (bigint >> 8) & 255;
-            var b = bigint & 255;
-            return { r: r, g: g, b: b };
         }
 
         // 回车键搜索事件
@@ -191,14 +163,31 @@
             }
         });
 
-        // 在页面加载时检查当前模式并设置切换按钮的图标
-        document.addEventListener('DOMContentLoaded', function() {
+        // 页面加载时，加载用户偏好设置和自动切换搜索引擎
+        window.onload = function() {
             var body = document.body;
-            var toggleButton = document.getElementById('toggleButton');
-            toggleButton.textContent = body.classList.contains('light-mode') ? '☀️' : '🌙';
-            toggleSearchEngine(); // 确保切换按钮的状态正确初始化
-			toggleSearchEngine(); //将默认搜索引擎设置为Baidu，注释为Bing
-        });
+            var storedMode = localStorage.getItem('mode'); // 获取存储的模式
+            if (storedMode === 'light') {
+                body.classList.add('light-mode');
+                isLightMode = true;
+            } else {
+                isLightMode = false;
+            }
+
+            // 初始化切换搜索引擎为Baidu
+            toggleSearchEngine();
+			toggleSearchEngine();
+        };
+
+        // 页面关闭时，保存用户偏好设置
+        window.onbeforeunload = function() {
+            var body = document.body;
+            if (isLightMode) {
+                localStorage.setItem('mode', 'light');
+            } else {
+                localStorage.setItem('mode', 'dark');
+            }
+        };
     </script>
 </body>
 </html>
