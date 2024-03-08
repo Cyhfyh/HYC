@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Baidu</title>
+    <title>Search Engine</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -14,7 +14,7 @@
             color: #fff; /* 默认文本颜色 */
         }
         .container {
-            margin-top: 25vh; /* 将容器上移，位于整体页面高度的三分之二位置 */
+            margin-top: 20vh; /* 将容器上移，位于整体页面高度的三分之二位置 */
         }
         h1, input[type="text"], button {
             margin-bottom: 10px;
@@ -39,7 +39,7 @@
         button:active {
             transform: translateY(2px); /* 按钮按下时向下移动2px */
         }
-        #toggleButton {
+        #toggleButton, #changeColorButton {
             position: fixed;
             bottom: 10px;
             left: 10px; /* 调整位置到左下角 */
@@ -52,10 +52,10 @@
             transition: transform 0.3s ease; /* 添加过渡效果 */
             cursor: pointer; /* 鼠标指针变为手指形状 */
         }
-        #toggleButton:hover {
+        #toggleButton:hover, #changeColorButton:hover {
             transform: scale(1.1); /* 悬停时放大图标 */
         }
-        #toggleButton:focus {
+        #toggleButton:focus, #changeColorButton:focus {
             outline: none; /* 移除焦点样式 */
         }
         #alertButton {
@@ -84,11 +84,39 @@
             color: #333; /* 输入框和按钮文本颜色变为黑色 */
             background-color: #fff; /* 输入框和按钮背景色变为白色 */
         }
+        #searchEngineButton {
+            cursor: pointer;
+            font-size: 48px; /* 增大字体大小 */
+            font-weight: bold; /* 加粗 */
+        }
     </style>
+</head>
+<body>
+    <div class="container">
+        <h1><span id="searchEngineButton" onclick="toggleSearchEngine()">Baidu</span></h1>
+        <input type="text" id="searchText" placeholder="输入搜索词">
+        <button onclick="searchOnSearchEngine()">搜索</button>
+    </div>
+    <!-- 切换背景颜色按钮 -->
+    <div id="toggleButton" onclick="toggleBackground()">🌙</div>
+    <!-- 更改背景颜色按钮 -->
+    <div id="changeColorButton" onclick="changeBackgroundColorWithPicker()" style="left: 60px;">✨</div>
+    <!-- 弹出提示框按钮 -->
+    <div id="alertButton" onclick="showAlert('作者：Cyhfyh/n版权归作者所有')">❗</div>
+    <!-- 颜色选择器 -->
+    <input type="color" id="colorPicker" style="display: none;" onchange="updateBackgroundColor()">
+
     <script>
-        function searchOnBaidu() {
+        var currentSearchEngine = 'Baidu';
+
+        function searchOnSearchEngine() {
             var searchText = document.getElementById('searchText').value;
-            var searchUrl = 'https://www.baidu.com/s?wd=' + encodeURIComponent(searchText);
+            var searchUrl = '';
+            if (currentSearchEngine === 'Baidu') {
+                searchUrl = 'https://www.baidu.com/s?wd=' + encodeURIComponent(searchText);
+            } else if (currentSearchEngine === 'Bing') {
+                searchUrl = 'https://www.bing.com/search?q=' + encodeURIComponent(searchText);
+            }
             window.open(searchUrl, '_blank');
         }
 
@@ -99,15 +127,66 @@
             toggleButton.textContent = body.classList.contains('light-mode') ? '☀️' : '🌙';
         }
 
+        function toggleSearchEngine() {
+            var searchEngineButton = document.getElementById('searchEngineButton');
+            if (currentSearchEngine === 'Baidu') {
+                currentSearchEngine = 'Bing';
+                searchEngineButton.textContent = 'Baidu';
+            } else {
+                currentSearchEngine = 'Baidu';
+                searchEngineButton.textContent = 'Bing';
+            }
+        }
+
         // 弹出提示框函数
         function showAlert(message) {
             alert(message);
         }
 
+        // 更改页面背景颜色（使用颜色选择器）
+        function changeBackgroundColorWithPicker() {
+            var colorPicker = document.getElementById('colorPicker');
+            colorPicker.click(); // 触发颜色选择器的点击事件
+        }
+
+        // 更新背景颜色和模式
+        function updateBackgroundColor() {
+            var newColor = document.getElementById('colorPicker').value;
+            document.body.style.backgroundColor = newColor;
+            var body = document.body;
+            var toggleButton = document.getElementById('toggleButton');
+            // 如果新颜色为浅色，则添加 light-mode 类；否则移除
+            if (isLightColor(newColor)) {
+                body.classList.add('light-mode');
+                toggleButton.textContent = '☀️';
+            } else {
+                body.classList.remove('light-mode');
+                toggleButton.textContent = '🌙';
+            }
+        }
+
+        // 判断颜色是否为浅色
+        function isLightColor(color) {
+            // 将颜色转换为 RGB 格式
+            var rgb = hexToRgb(color);
+            // 根据 RGB 值判断是否为浅色
+            var brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
+            return brightness > 155; // 155 是一个经验值，您可以根据需要调整
+        }
+
+        // 将十六进制颜色转换为 RGB 格式
+        function hexToRgb(hex) {
+            var bigint = parseInt(hex.substring(1), 16);
+            var r = (bigint >> 16) & 255;
+            var g = (bigint >> 8) & 255;
+            var b = bigint & 255;
+            return { r: r, g: g, b: b };
+        }
+
         // 回车键搜索事件
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Enter') {
-                searchOnBaidu();
+                searchOnSearchEngine();
             }
         });
 
@@ -116,22 +195,8 @@
             var body = document.body;
             var toggleButton = document.getElementById('toggleButton');
             toggleButton.textContent = body.classList.contains('light-mode') ? '☀️' : '🌙';
+            toggleSearchEngine(); // 确保切换按钮的状态正确初始化
         });
-    </script>
-</head>
-<body>
-    <div class="container">
-        <h1>Baidu</h1>
-        <input type="text" id="searchText" placeholder="输入搜索词">
-        <button onclick="searchOnBaidu()">搜索</button>
-    </div>
-    <!-- 弹出提示框按钮 -->
-    <div id="alertButton" onclick="showAlert('作者：Cyhfyh\n版权归作者所有')">❗</div>
-    <!-- 切换背景颜色按钮 -->
-    <div id="toggleButton" onclick="toggleBackground()">🌙</div>
-    <script>
-        // 设置默认为深色模式
-        document.body.classList.remove('light-mode');
     </script>
 </body>
 </html>
