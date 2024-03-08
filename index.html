@@ -93,7 +93,7 @@
 </head>
 <body>
     <div class="container">
-        <h1><span id="searchEngineButton" onclick="toggleSearchEngine()">Baidu</span></h1>
+        <h1><span id="searchEngineButton" onclick="toggleSearchEngine()">Bing</span></h1>
         <input type="text" id="searchText" placeholder="输入搜索词">
         <button onclick="searchOnSearchEngine()">搜索</button>
     </div>
@@ -102,7 +102,7 @@
     <!-- 更改背景颜色按钮 -->
     <div id="changeColorButton" onclick="changeBackgroundColorWithPicker()" style="left: 60px;">✨</div>
     <!-- 弹出提示框按钮 -->
-    <div id="alertButton" onclick="showAlert('作者：Cyhfyh/n版权归作者所有')">❗</div>
+    <div id="alertButton" onclick="showAlert('点击🌙或☀️可以切换深浅色模式/n点击✨可以自定义页面背景颜色/n作者：Cyhfyh/n版权归作者所有')">❗</div>
     <!-- 颜色选择器 -->
     <input type="color" id="colorPicker" style="display: none;" onchange="updateBackgroundColor()">
 
@@ -131,10 +131,10 @@
             var searchEngineButton = document.getElementById('searchEngineButton');
             if (currentSearchEngine === 'Baidu') {
                 currentSearchEngine = 'Bing';
-                searchEngineButton.textContent = 'Baidu';
+                searchEngineButton.textContent = 'Bing';
             } else {
                 currentSearchEngine = 'Baidu';
-                searchEngineButton.textContent = 'Bing';
+                searchEngineButton.textContent = 'Baidu';
             }
         }
 
@@ -196,6 +196,7 @@
             var toggleButton = document.getElementById('toggleButton');
             toggleButton.textContent = body.classList.contains('light-mode') ? '☀️' : '🌙';
             toggleSearchEngine(); // 确保切换按钮的状态正确初始化
+			toggleSearchEngine(); //注释这一行，默认搜索引擎就为Bing，不注释则为Baidu。
         });
     </script>
 </body>
