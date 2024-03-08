@@ -102,7 +102,7 @@
     <!-- 更改背景颜色按钮 -->
     <div id="changeColorButton" onclick="changeBackgroundColorWithPicker()" style="left: 60px;">✨</div>
     <!-- 弹出提示框按钮 -->
-    <div id="alertButton" onclick="showAlert('点击🌙或☀切换深浅色模式\n点击✨自定义背景颜色\n作者：Cyhfyh\n版权归作者所有')">❗</div>
+    <div id="alertButton" onclick="showAlert('点击搜索引擎名称以切换搜索引擎\n点击🌙或☀切换深浅色模式\n点击✨自定义背景颜色\n作者：Cyhfyh\n版权归作者所有')">❗</div>
     <!-- 颜色选择器 -->
     <input type="color" id="colorPicker" style="display: none;" onchange="updateBackgroundColor()">
 
@@ -117,7 +117,8 @@
             } else if (currentSearchEngine === 'Bing') {
                 searchUrl = 'https://www.bing.com/search?q=' + encodeURIComponent(searchText);
             }
-            window.open(searchUrl, '_blank');
+            // 修改这里，使得在当前窗口打开搜索结果
+            window.location.href = searchUrl;
         }
 
         function toggleBackground() {
@@ -196,7 +197,7 @@
             var toggleButton = document.getElementById('toggleButton');
             toggleButton.textContent = body.classList.contains('light-mode') ? '☀️' : '🌙';
             toggleSearchEngine(); // 确保切换按钮的状态正确初始化
-			toggleSearchEngine(); //注释这一行，默认搜索引擎就为Bing，不注释则为Baidu。
+			toggleSearchEngine(); //将默认搜索引擎设置为Baidu，注释为Bing
         });
     </script>
 </body>
