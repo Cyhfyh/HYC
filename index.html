@@ -39,8 +39,7 @@
         button:active {
             transform: translateY(2px); /* 按钮按下时向下移动2px */
         }
-        #toggleButton, #changeColorButton, #alertButton {
-            position: fixed;
+        #toggleButton, #changeColorButton, #alertButton, #weatherButton, #dateIcon {
             padding: 10px;
             font-size: 24px;
             cursor: pointer;
@@ -49,10 +48,11 @@
             color: #fff; /* 文本颜色 */
             transition: transform 0.3s ease; /* 添加过渡效果 */
             cursor: pointer; /* 鼠标指针变为手指形状 */
+            position: fixed; /* 设置为固定定位，以便在页面上固定位置 */
         }
         #toggleButton {
             bottom: 10px;
-            left: 10px; /* 调整位置到左下角 */
+            left: 10px;
         }
         #changeColorButton {
             bottom: 10px;
@@ -60,12 +60,20 @@
         }
         #alertButton {
             bottom: 10px;
-            right: 10px; /* 调整位置到右下角 */
+            left: 110px;
         }
-        #toggleButton:hover, #changeColorButton:hover, #alertButton:hover {
+        #weatherButton {
+            top: 10px;
+            left: 10px;
+        }
+        #dateIcon {
+            top: 60px;
+            left: 10px;
+        }
+        #toggleButton:hover, #changeColorButton:hover, #alertButton:hover, #weatherButton:hover, #dateIcon:hover {
             transform: scale(1.1); /* 悬停时放大图标 */
         }
-        #toggleButton:focus, #changeColorButton:focus, #alertButton:focus {
+        #toggleButton:focus, #changeColorButton:focus, #alertButton:focus, #weatherButton:focus, #dateIcon:focus {
             outline: none; /* 移除焦点样式 */
         }
         /* 浅色模式下的样式 */
@@ -81,9 +89,8 @@
             cursor: pointer;
             font-size: 48px; /* 增大字体大小 */
             font-weight: bold; /* 加粗 */
-			
-			
-			 #calendar {
+        }
+        #calendar {
             position: fixed;
             top: 10px;
             left: 10px;
@@ -97,10 +104,6 @@
         #calendar h2 {
             margin: 0;
             font-size: 16px;
-        }
-		
-		
-		
         }
     </style>
 </head>
@@ -116,6 +119,11 @@
     <div id="changeColorButton" onclick="changeBackgroundColorWithPicker()">✨</div>
     <!-- 弹出提示框按钮 -->
     <div id="alertButton" onclick="showAlert('点击搜索引擎名称以切换搜索引擎\n点击🌙或☀️切换深浅色模式\n点击✨自定义背景颜色\n作者：Cyhfyh\n版权归作者所有')">❗</div>
+    <!-- 天气查询按钮 -->
+    <div id="weatherButton" class="icon" onclick="openWeatherPage()">⛅</div>
+    <!-- 日期图标 -->
+    <div id="dateIcon">📅</div>
+
     <!-- 颜色选择器 -->
     <input type="color" id="colorPicker" style="display: none;" onchange="updateBackgroundColor()">
 
@@ -149,8 +157,7 @@
                 toggleButton.textContent = '🌙'; // 更新按钮文本为🌙
             }
         }
-			
-			
+
         // 切换搜索引擎
         function toggleSearchEngine() {
             var searchEngineButton = document.getElementById('searchEngineButton');
@@ -180,78 +187,11 @@
             document.body.style.backgroundColor = newColor;
         }
 
-        // 回车键搜索事件
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Enter') {
-                searchOnSearchEngine();
-            }
-        });
-
-        // 页面加载时，加载用户偏好设置和自动切换搜索引擎
-        window.onload = function() {
-            var body = document.body;
-            var storedMode = localStorage.getItem('mode'); // 获取存储的模式
-            if (storedMode === 'light') {
-                body.classList.add('light-mode');
-                isLightMode = true;
-            } else {
-                isLightMode = false;
-            }
-
-            // 初始化切换搜索引擎为Baidu
-            toggleSearchEngine();
-			toggleSearchEngine();
-        };
-
-        // 页面关闭时，保存用户偏好设置
-        window.onbeforeunload = function() {
-            var body = document.body;
-            if (isLightMode) {
-                localStorage.setItem('mode', 'light');
-            } else {
-                localStorage.setItem('mode', 'dark');
-            }
-        };
+        // 天气查询按钮
+        function openWeatherPage() {
+            var weatherUrl = 'https://www.msn.cn/zh-cn/weather/';
+            window.open(weatherUrl, '_blank');
+        }
     </script>
-	
-	<!-- 天气查询按钮 -->
-<div id="weatherButton" class="icon" onclick="openWeatherPage()">⛅</div>
-
-<style>
-    /* 天气查询按钮样式 */
-    #weatherButton {
-        position: fixed;
-        top: 10px;
-        right: 10px;
-        padding: 10px;
-        font-size: 24px;
-        cursor: pointer;
-        background: none;
-        border: none;
-        color: #fff;
-        transition: transform 0.3s ease;
-        cursor: pointer;
-    }
-
-    /* 悬停时放大图标 */
-    #weatherButton:hover {
-        transform: scale(1.1);
-    }
-
-    /* 焦点样式 */
-    #weatherButton:focus {
-        outline: none;
-    }
-</style>
-
-<script>
-    // 打开天气查询页面
-    function openWeatherPage() {
-        var weatherUrl = 'https://www.msn.cn/zh-cn/weather/';
-        window.open(weatherUrl, '_blank');
-    }
-</script>
-
-	
 </body>
 </html>
