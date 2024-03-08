@@ -81,6 +81,26 @@
             cursor: pointer;
             font-size: 48px; /* 增大字体大小 */
             font-weight: bold; /* 加粗 */
+			
+			
+			 #calendar {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background-color: #fff;
+            color: #333;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 100;
+        }
+        #calendar h2 {
+            margin: 0;
+            font-size: 16px;
+        }
+		
+		
+		
         }
     </style>
 </head>
@@ -95,7 +115,7 @@
     <!-- 更改背景颜色按钮 -->
     <div id="changeColorButton" onclick="changeBackgroundColorWithPicker()">✨</div>
     <!-- 弹出提示框按钮 -->
-    <div id="alertButton" onclick="showAlert('点击搜索引擎名称以切换搜索引擎\n点击🌙或☀切换深浅色模式\n点击✨自定义背景颜色\n作者：Cyhfyh\n版权归作者所有')">❗</div>
+    <div id="alertButton" onclick="showAlert('点击搜索引擎名称以切换搜索引擎\n点击🌙或☀️切换深浅色模式\n点击✨自定义背景颜色\n作者：Cyhfyh\n版权归作者所有')">❗</div>
     <!-- 颜色选择器 -->
     <input type="color" id="colorPicker" style="display: none;" onchange="updateBackgroundColor()">
 
@@ -112,21 +132,25 @@
             } else if (currentSearchEngine === 'Bing') {
                 searchUrl = 'https://www.bing.com/search?q=' + encodeURIComponent(searchText);
             }
-            // 修改这里，使得在当前窗口打开搜索结果
+            // 使得在当前窗口打开搜索结果
             window.location.href = searchUrl;
         }
 
         // 切换背景颜色
         function toggleBackground() {
             var body = document.body;
+            var toggleButton = document.getElementById('toggleButton');
             isLightMode = !isLightMode; // 切换深浅色模式
             if (isLightMode) {
                 body.classList.add('light-mode');
+                toggleButton.textContent = '☀️'; // 更新按钮文本为☀️
             } else {
                 body.classList.remove('light-mode');
+                toggleButton.textContent = '🌙'; // 更新按钮文本为🌙
             }
         }
-
+			
+			
         // 切换搜索引擎
         function toggleSearchEngine() {
             var searchEngineButton = document.getElementById('searchEngineButton');
@@ -223,7 +247,7 @@
 <script>
     // 打开天气查询页面
     function openWeatherPage() {
-        var weatherUrl = 'https://weathernew.pae.baidu.com/weathernew/pc?query=%E6%8F%AD%E9%98%B3%E6%83%A0%E6%9D%A5%E5%A4%A9%E6%B0%94&srcid=4982&forecast=';
+        var weatherUrl = 'https://www.msn.cn/zh-cn/weather/';
         window.open(weatherUrl, '_blank');
     }
 </script>
