@@ -68,7 +68,7 @@
             left: 160px;
         }
         #weatherButton {
-            top: 9px;
+            top: 10px;
             left: 210px;
         }
         #toggleButton:hover, #changeColorButton:hover, #alertButton:hover, #weatherButton:hover, #dateIcon:hover {
@@ -119,7 +119,7 @@
     <!-- 更改背景颜色按钮 -->
     <div id="changeColorButton" onclick="changeBackgroundColorWithPicker()">✨</div>
     <!-- 弹出提示框按钮 -->
-    <div id="alertButton" onclick="showAlert('点击搜索引擎名称以切换搜索引擎\n点击🌙或☀️切换深浅色模式\n点击✨自定义背景颜色\n作者：Cyhfyh\n版权归作者所有')">❗</div>
+    <div id="alertButton" onclick="showAlert('点击搜索引擎名称以切换搜索引擎\n🌙☀️：切换深浅色模式\n✨：自定义背景颜色\n📅：显示或隐藏日期信息\n⛅：跳转微软天气\n作者：Cyhfyh\n版权归作者所有')">❗</div>
     <!-- 天气查询按钮 -->
     <div id="weatherButton" class="icon" onclick="openWeatherPage()">⛅</div>
     <!-- 日期图标 -->
@@ -236,13 +236,15 @@
             dateDisplay.textContent = currentDate.toLocaleDateString('zh-CN', options);
         }
 
-        // 打开天气查询页面
+		/*
+        // 打开天气查询页面（新建标签页）
         function openWeatherPage() {
             var weatherUrl = 'https://www.msn.cn/zh-cn/weather/';
             window.open(weatherUrl, '_blank');
         }
+		*/
 
-		// 打开天气查询页面
+		// 打开天气查询页面（当前标签页）
 		function openWeatherPage() {
 			var weatherUrl = 'https://www.msn.cn/zh-cn/weather/';
 			window.location.href = weatherUrl;
