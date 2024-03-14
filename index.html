@@ -39,7 +39,7 @@
         button:active {
             transform: translateY(2px); /* 按钮按下时向下移动2px */
         }
-        #toggleButton, #changeColorButton, #alertButton, #weatherButton, #dateIcon {
+        #toggleButton, #changeColorButton, #alertButton, #weatherButton, #dateIcon, #collapseButton {
             padding: 10px;
             font-size: 24px;
             cursor: pointer;
@@ -51,30 +51,36 @@
             position: fixed; /* 设置为固定定位，以便在页面上固定位置 */
 		
         }
-        #toggleButton {
+        #toggleButton {		/*深浅色切换*/
             top: 10px;
             left: 10px;
         }
-        #changeColorButton {
-            top: 10px;
-            left: 60px;
-        }
-        #alertButton {
-            top: 10px;
-            left: 110px;
-        }
-        #dateIcon {
+        #changeColorButton {		/*背景颜色切换*/
             top: 10px;
             left: 160px;
         }
-        #weatherButton {
+        #alertButton {		/*详情弹窗*/
             top: 10px;
             left: 210px;
         }
-        #toggleButton:hover, #changeColorButton:hover, #alertButton:hover, #weatherButton:hover, #dateIcon:hover {
+        #dateIcon {		/*日期显示*/
+            top: 10px;
+            left: 260px;
+        }
+        #weatherButton {		/*跳转天气*/
+            top: 10px;
+            left: 60px;
+        }
+		#collapseButton {
+			top: 10px;
+			left: 110px;
+		}
+		
+		
+        #toggleButton:hover, #changeColorButton:hover, #alertButton:hover, #weatherButton:hover, #dateIcon:hover, #collapseButton:hover {
             transform: scale(1.1); /* 悬停时放大图标 */
         }
-        #toggleButton:focus, #changeColorButton:focus, #alertButton:focus, #weatherButton:focus, #dateIcon:focus {
+        #toggleButton:focus, #changeColorButton:focus, #alertButton:focus, #weatherButton:focus, #dateIcon:focus, #collapseButton:focus {
             outline: none; /* 移除焦点样式 */
         }
         /* 浅色模式下的样式 */
@@ -106,6 +112,17 @@
             margin: 0;
             font-size: 16px;
         }
+		
+		#changeColorButton,
+		#alertButton,
+		#dateIcon {
+			opacity: 0; /* 初始状态为隐藏 */
+			transition: opacity 0.5s ease; /* 添加过渡效果 */
+		}
+
+
+		
+		
     </style>
 </head>
 <body>
@@ -128,6 +145,9 @@
     <div id="dateDisplay" style="display: none;"></div>
 	<!-- 更改背景颜色按钮 -->
 	<input type="color" id="colorPicker" style="display: none;" onchange="updateBackgroundColor()">
+	<!-- 折叠图标按钮 -->
+	<div id="collapseButton" onclick="toggleIconVisibility()">🔽</div>
+	
 	
     <script>
         var currentSearchEngine = 'Baidu';
@@ -207,6 +227,8 @@
                 isLightMode = false;
             }
 
+
+
             // 初始化切换搜索引擎为Baidu
             toggleSearchEngine();
 			toggleSearchEngine();
@@ -215,6 +237,10 @@
 			// 初始化深浅色按钮
 			toggleBackground();
 			toggleBackground();
+			// 初始化按钮隐藏按钮
+			toggleIconVisibility(); 
+			
+			
 			
         };
 
@@ -265,6 +291,37 @@
         window.addEventListener('load', function() {
             updateDateDisplay();
         });
+		
+		
+		// 切换图标显示状态
+		function toggleIconVisibility() {
+			var icon1 = document.getElementById('changeColorButton');
+			var icon2 = document.getElementById('alertButton');
+			var icon3 = document.getElementById('dateIcon');
+			if (icon1.style.opacity === '0') {
+			// 如果图标被隐藏，显示出来
+			setTimeout(function() {
+				icon1.style.opacity = '1';
+				icon1.style.pointerEvents = 'auto'; // 启用交互
+				icon2.style.opacity = '1';
+				icon2.style.pointerEvents = 'auto'; // 启用交互
+				icon3.style.opacity = '1';
+				icon3.style.pointerEvents = 'auto'; // 启用交互
+			}, 50); // 添加延迟以确保过渡效果能够生效
+			// 更新按钮文本为折叠状态
+			document.getElementById('collapseButton').textContent = '🖐';
+			} else {
+				// 如果图标可见，隐藏起来
+				icon1.style.opacity = '0';
+				icon1.style.pointerEvents = 'none'; // 禁用交互
+				icon2.style.opacity = '0';
+				icon2.style.pointerEvents = 'none'; // 禁用交互
+				icon3.style.opacity = '0';
+				icon3.style.pointerEvents = 'none'; // 禁用交互
+				// 更新按钮文本为展开状态
+				document.getElementById('collapseButton').textContent = '🤏';
+		}
+	}
 		
     </script>
 </body>
