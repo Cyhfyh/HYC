@@ -4,325 +4,659 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HYC</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        :root {
+            --bg-color: #f5f5f5;
+            --container-bg: white;
+            --text-color: #3d3d3d;
+            --border-color: #ddd;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --hover-color: #4285f4;
+            --primary-color: #4285f4;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #1a1a1a;
+            --container-bg: #2d2d2d;
+            --text-color: #ffffff;
+            --border-color: #404040;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --hover-color: #4285f4;
+            --primary-color: #4285f4;
+        }
+
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            justify-content: flex-start;
+            position: relative;
+            margin: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .main-content {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: absolute;
+            top: 33vh;
+            left: 0;
+            right: 0;
+        }
+
+        .search-container {
+            position: relative;
             text-align: center;
-            margin: 0;
             padding: 0;
-            background-color: #333; /* 默认深色背景 */
-            color: #fff; /* 默认文本颜色 */
+            transition: all 0.3s ease;
+            max-width: 650px;
+            width: 95%;
+            margin: 60px auto 0 auto;
         }
-        .container {
-            margin-top: 20vh; /* 将容器上移，位于整体页面高度的三分之二位置 */
-        }
-        h1, input[type="text"], button {
-            margin-bottom: 10px;
-        }
-        input[type="text"], button {
-            padding: 12px;
-            font-size: 16px;
-            vertical-align: middle;
-            color: #fff; /* 默认按钮和输入框文本颜色 */
-            background-color: #555; /* 默认按钮和输入框背景色 */
-            border: none; /* 移除边框 */
-            border-radius: 5px; /* 添加圆角 */
-            transition: background-color 0.3s ease, transform 0.3s ease; /* 添加过渡效果 */
-        }
-        input[type="text"] {
-            width: 300px;
-        }
-        button {
+
+        .logo {
+            font-size: 3em;
+            font-weight: 900;
+            margin-bottom: 24px;
+            color: var(--text-color);
+            letter-spacing: 2px;
             cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 添加阴影效果 */
         }
-        button:active {
-            transform: translateY(2px); /* 按钮按下时向下移动2px */
+
+        .date-info {
+            margin-top: 12px;
+            font-size: 1.1em;
+            color: var(--text-color);
+            font-weight: 500;
+            letter-spacing: 1px;
+            user-select: none;
+            transition: opacity 0.3s;
         }
-        #toggleButton, #changeColorButton, #alertButton, #weatherButton, #dateIcon, #collapseButton {
-            padding: 10px;
-            font-size: 24px;
-            cursor: pointer;
-            background: none; /* 移除背景 */
-            border: none; /* 移除边框 */
-            color: #fff; /* 文本颜色 */
-            transition: transform 0.3s ease; /* 添加过渡效果 */
-            cursor: pointer; /* 鼠标指针变为手指形状 */
-            position: fixed; /* 设置为固定定位，以便在页面上固定位置 */
-		
-        }
-        #toggleButton {		/*深浅色切换*/
-            top: 10px;
-            left: 10px;
-        }
-        #changeColorButton {		/*背景颜色切换*/
-            top: 10px;
-            left: 160px;
-        }
-        #alertButton {		/*详情弹窗*/
-            top: 10px;
-            left: 210px;
-        }
-        #dateIcon {		/*日期显示*/
-            top: 10px;
-            left: 260px;
-        }
-        #weatherButton {		/*跳转天气*/
-            top: 10px;
-            left: 60px;
-        }
-		#collapseButton {
-			top: 10px;
-			left: 110px;
-		}
-		
-		
-        #toggleButton:hover, #changeColorButton:hover, #alertButton:hover, #weatherButton:hover, #dateIcon:hover, #collapseButton:hover {
-            transform: scale(1.1); /* 悬停时放大图标 */
-        }
-        #toggleButton:focus, #changeColorButton:focus, #alertButton:focus, #weatherButton:focus, #dateIcon:focus, #collapseButton:focus {
-            outline: none; /* 移除焦点样式 */
-        }
-        /* 浅色模式下的样式 */
-        body.light-mode {
-            background-color: #f0f0f0; /* 浅色背景 */
-            color: #333; /* 文本颜色变为黑色 */
-        }
-        body.light-mode input[type="text"], body.light-mode button {
-            color: #333; /* 输入框和按钮文本颜色变为黑色 */
-            background-color: #fff; /* 输入框和按钮背景色变为白色 */
-        }
-        #searchEngineButton {
-            cursor: pointer;
-            font-size: 48px; /* 增大字体大小 */
-            font-weight: bold; /* 加粗 */
-        }
-        #calendar {
-            position: fixed;
-            top: 10px;
-            left: 10px;
-            background-color: #fff;
-            color: #333;
-            padding: 10px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            z-index: 100;
-        }
-        #calendar h2 {
+        .date-info.hide {
+            opacity: 0;
+            height: 0;
             margin: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .search-form {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .search-form.focus .search-box,
+        .search-form.focus .search-button {
+            border-color: var(--primary-color);
+        }
+
+        .search-form.focus .search-box {
+            z-index: 1;
+        }
+
+        .search-form.focus .search-button {
+            z-index: 1;
+        }
+
+        .search-box:focus,
+        .search-button:focus {
+            outline: none;
+        }
+
+        .search-box {
+            flex: 1;
+            padding: 0 20px;
+            font-size: 16px;
+            border: 2px solid var(--border-color);
+            border-right: none;
+            border-radius: 30px 0 0 30px;
+            outline: none;
+            transition: all 0.3s;
+            background-color: var(--container-bg);
+            color: var(--text-color);
+            height: 48px;
+            box-sizing: border-box;
+            line-height: 48px;
+        }
+
+        .search-button {
+            width: 48px;
+            height: 48px;
+            background: var(--container-bg);
+            border: 2px solid var(--border-color);
+            border-left: none;
+            border-radius: 0 30px 30px 0;
+            cursor: pointer;
+            color: var(--text-color);
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-left: 0;
+            box-sizing: border-box;
+        }
+
+        .search-button i {
+            font-size: 20px;
+        }
+
+        .theme-switch {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: var(--container-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--text-color);
+            font-weight: 500;
+        }
+
+        .theme-switch:hover {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .settings-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+        }
+
+        .settings-button {
+            padding: 10px;
+            background-color: var(--container-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--text-color);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+        }
+
+        .settings-button:hover {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            transform: rotate(90deg);
+        }
+
+        .settings-menu {
+            position: absolute;
+            top: 50px;
+            right: 0;
+            background-color: var(--container-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px var(--shadow-color);
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transform-origin: top right;
+            transform: scale(0);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+        }
+
+        .settings-menu.active {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .settings-item {
+            padding: 12px 20px;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background-color: var(--bg-color);
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+            transform-origin: center;
+        }
+
+        .settings-item:hover {
+            background-color: var(--primary-color);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .settings-item i {
+            width: 20px;
+            text-align: center;
             font-size: 16px;
         }
-		
-		#changeColorButton,
-		#alertButton,
-		#dateIcon {
-			opacity: 0; /* 初始状态为隐藏 */
-			transition: opacity 0.5s ease; /* 添加过渡效果 */
-		}
 
+        .suggestions-container {
+            position: absolute;
+            top: calc(100% + 5px); /* 确保紧挨搜索文本框 */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 500px;
+            background-color: var(--container-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px var(--shadow-color);
+            z-index: 1000;
+            display: none;
+            overflow: hidden;
+        }
 
-		
-		
+        .suggestions-container.active {
+            display: block;
+        }
+
+        .suggestion-item {
+            padding: 12px 20px;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .suggestion-item:hover, .suggestion-item.active {
+            background-color: var(--bg-color);
+        }
+
+        .suggestion-item i {
+            color: var(--primary-color);
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        .suggestion-item .highlight {
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        @media (max-width: 600px) {
+            .main-content {
+                top: 18vh;
+            }
+            .search-container {
+                padding: 24px 8px 20px 8px;
+                width: 98%;
+            }
+            .logo {
+                font-size: 2em;
+                margin-bottom: 20px;
+            }
+            .search-form {
+                max-width: 98vw;
+            }
+            .search-box, .search-button {
+                height: 40px;
+                font-size: 15px;
+                line-height: 40px;
+            }
+        }
+
+        .top-left-buttons {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 1001;
+        }
+
+        .nav-button {
+            padding: 10px;
+            background-color: var(--container-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--text-color);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-button:hover {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .nav-button i {
+            font-size: 13px;
+        }
+
+        .settings-button i {
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1><span id="searchEngineButton" onclick="toggleSearchEngine()">Bing</span></h1>
-        <input type="text" id="searchText" placeholder="输入搜索词">
-        <button onclick="searchOnSearchEngine()">搜索</button>
+    <div class="top-left-buttons">
+        <button class="nav-button" onclick="window.location.href='https://map.baidu.com'">
+            <i class="fas fa-map"></i>
+        </button>
+        <button class="nav-button" onclick="window.location.href='https://www.doubao.com'">
+            <i class="fas fa-robot"></i>
+        </button>
+        <button class="nav-button" onclick="window.location.href='https://fanyi.baidu.com'">
+            <i class="fas fa-language"></i>
+        </button>
+        <button class="nav-button" onclick="window.location.href='https://www.msn.com/weather'">
+            <i class="fas fa-cloud-sun"></i>
+        </button>
     </div>
-    <!-- 切换背景颜色按钮 -->
-    <div id="toggleButton" onclick="toggleBackground()">🌙</div>
-    <!-- 更改背景颜色按钮 -->
-    <div id="changeColorButton" onclick="changeBackgroundColorWithPicker()">✨</div>
-    <!-- 弹出提示框按钮 -->
-    <div id="alertButton" onclick="showAlert('点击搜索引擎名称以切换搜索引擎\n🌙☀️：切换深浅色模式\n✨：自定义背景颜色\n📅：显示或隐藏日期信息\n⛅：跳转微软天气\n作者：Cyhfyh\n版权归作者所有')">❗</div>
-    <!-- 天气查询按钮 -->
-    <div id="weatherButton" class="icon" onclick="openWeatherPage()">⛅</div>
-    <!-- 日期图标 -->
-    <div id="dateIcon" onclick="toggleDateDisplay()">📅</div>
-    <!-- 日期显示 -->
-    <div id="dateDisplay" style="display: none;"></div>
-	<!-- 更改背景颜色按钮 -->
-	<input type="color" id="colorPicker" style="display: none;" onchange="updateBackgroundColor()">
-	<!-- 折叠图标按钮 -->
-	<div id="collapseButton" onclick="toggleIconVisibility()">🔽</div>
-	
-	
+    <div class="settings-container">
+        <button class="settings-button" onclick="toggleSettings()">
+            <i class="fas fa-cog"></i>
+        </button>
+        <div class="settings-menu" id="settingsMenu">
+            <button class="settings-item" onclick="toggleTheme()">
+                <i class="fas fa-moon"></i>
+                <span>切换主题</span>
+            </button>
+            <button class="settings-item" onclick="toggleDateInfo()" id="toggleDateBtn">
+                <i class="fas fa-calendar-day"></i>
+                <span>日期显隐</span>
+            </button>
+            <button class="settings-item" onclick="toggleDefaultSearchEngine()" id="toggleSearchEngineBtn">
+                <i class="fas fa-search"></i>
+                <span>默认引擎</span>
+            </button>
+        </div>
+    </div>
+    <div class="main-content">
+        <div class="search-container">
+            <div class="logo" id="searchLogo" onclick="toggleSearchEngine()">Baidu</div>
+            <form action="https://www.baidu.com/s" method="get" id="searchForm" class="search-form">
+                <input type="text" name="wd" class="search-box" placeholder="请输入搜索内容..." autocomplete="off" id="searchInput">
+                <button type="submit" class="search-button" id="searchBtn">
+                    <i class="fas fa-search"></i>
+                </button>
+            </form>
+            <div class="suggestions-container" id="suggestionsContainer"></div>
+            <div class="date-info" id="dateInfo"></div>
+        </div>
+    </div>
+
     <script>
-        var currentSearchEngine = 'Baidu';
-        var isLightMode = false; // 默认为深色模式
-
-        // 搜索功能
-        function searchOnSearchEngine() {
-            var searchText = document.getElementById('searchText').value;
-            var searchUrl = '';
-            if (currentSearchEngine === 'Baidu') {
-                searchUrl = 'https://www.baidu.com/s?wd=' + encodeURIComponent(searchText);
-            } else if (currentSearchEngine === 'Bing') {
-                searchUrl = 'https://www.bing.com/search?q=' + encodeURIComponent(searchText);
-            }
-            // 使得在当前窗口打开搜索结果
-            window.location.href = searchUrl;
+        // 检查本地存储中的主题设置
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            document.documentElement.setAttribute('data-theme', savedTheme);
         }
 
-        // 切换背景颜色
-        function toggleBackground() {
-            var body = document.body;
-            var toggleButton = document.getElementById('toggleButton');
-            isLightMode = !isLightMode; // 切换深浅色模式
-            if (isLightMode) {
-                body.classList.add('light-mode');
-                toggleButton.textContent = '☀️'; // 更新按钮文本为☀️
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+
+        function toggleSettings() {
+            const menu = document.getElementById('settingsMenu');
+            const button = document.querySelector('.settings-button');
+            
+            if (menu.classList.contains('active')) {
+                menu.classList.remove('active');
+                button.style.transform = 'rotate(0deg)';
             } else {
-                body.classList.remove('light-mode');
-                toggleButton.textContent = '🌙'; // 更新按钮文本为🌙
+                menu.classList.add('active');
+                button.style.transform = 'rotate(90deg)';
             }
         }
 
-        // 切换搜索引擎
+        // 点击其他地方关闭设置菜单
+        document.addEventListener('click', function(event) {
+            const settingsContainer = document.querySelector('.settings-container');
+            const menu = document.getElementById('settingsMenu');
+            const button = document.querySelector('.settings-button');
+            
+            if (!settingsContainer.contains(event.target)) {
+                menu.classList.remove('active');
+                button.style.transform = 'rotate(0deg)';
+            }
+        });
+
+        // 搜索建议功能
+        const searchInput = document.getElementById('searchInput');
+        const suggestionsContainer = document.getElementById('suggestionsContainer');
+        let suggestionTimeout;
+        let currentSuggestionIndex = -1;
+
+        searchInput.addEventListener('input', function() {
+            const query = this.value.trim();
+            
+            // 清除之前的定时器
+            clearTimeout(suggestionTimeout);
+            
+            // 如果输入为空，隐藏建议
+            if (!query) {
+                suggestionsContainer.classList.remove('active');
+                return;
+            }
+
+            // 设置新的定时器，延迟300ms发送请求
+            suggestionTimeout = setTimeout(() => {
+                fetchSuggestions(query);
+            }, 300);
+        });
+
+        // 点击建议项时进行搜索
+        suggestionsContainer.addEventListener('click', function(e) {
+            const item = e.target.closest('.suggestion-item');
+            if (item) {
+                searchInput.value = item.textContent;
+                document.getElementById('searchForm').submit();
+            }
+        });
+
+        // 点击其他地方时隐藏建议
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.search-container')) {
+                suggestionsContainer.classList.remove('active');
+            }
+        });
+
+        // 获取搜索建议
+        function fetchSuggestions(query) {
+            const script = document.createElement('script');
+            script.src = `https://suggestion.baidu.com/su?wd=${encodeURIComponent(query)}&cb=handleSuggestions`;
+            document.body.appendChild(script);
+            script.onload = () => {
+                document.body.removeChild(script);
+            };
+        }
+
+        // 处理搜索建议回调
+        function handleSuggestions(data) {
+            if (!data.s) {
+                suggestionsContainer.classList.remove('active');
+                return;
+            }
+
+            const suggestions = data.s;
+            const html = suggestions.map((suggestion, index) => {
+                const highlightedSuggestion = highlightText(suggestion, data.q);
+                return `
+                    <div class="suggestion-item">
+                        <i class="fas fa-search"></i>
+                        <span>${highlightedSuggestion}</span>
+                    </div>
+                `;
+            }).join('');
+
+            suggestionsContainer.innerHTML = html;
+            suggestionsContainer.classList.add('active');
+        }
+
+        // 高亮匹配文本
+        function highlightText(text, query) {
+            if (!query) return text;
+            const regex = new RegExp(`(${query})`, 'gi');
+            return text.replace(regex, '<span class="highlight">$1</span>');
+        }
+
+        // 搜索框和按钮高亮联动
+        const searchForm = document.getElementById('searchForm');
+        const searchInputBox = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+
+        function setFormFocus(focus) {
+            if (focus) {
+                searchForm.classList.add('focus');
+            } else {
+                searchForm.classList.remove('focus');
+            }
+        }
+
+        searchInputBox.addEventListener('focus', () => setFormFocus(true));
+        searchInputBox.addEventListener('blur', () => setTimeout(() => setFormFocus(document.activeElement === searchBtn), 10));
+        searchBtn.addEventListener('focus', () => setFormFocus(true));
+        searchBtn.addEventListener('blur', () => setTimeout(() => setFormFocus(document.activeElement === searchInputBox), 10));
+
+        // 日期显示功能
+        function getWeekDayName(day) {
+            const week = ['日', '一', '二', '三', '四', '五', '六'];
+            return '星期' + week[day];
+        }
+
+        function updateDateInfo() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth() + 1;
+            const date = now.getDate();
+            const week = getWeekDayName(now.getDay());
+            document.getElementById('dateInfo').textContent = `${year}年${month}月${date}日 ${week}`;
+        }
+
+        // 日期显隐控制
+        function setDateInfoVisible(visible) {
+            const dateInfo = document.getElementById('dateInfo');
+            if (visible) {
+                dateInfo.classList.remove('hide');
+            } else {
+                dateInfo.classList.add('hide');
+            }
+        }
+
+        function toggleDateInfo() {
+            const dateInfo = document.getElementById('dateInfo');
+            const isVisible = !dateInfo.classList.contains('hide');
+            setDateInfoVisible(!isVisible);
+            localStorage.setItem('showDateInfo', !isVisible ? '1' : '0');
+        }
+
+        // 初始化日期显示
+        updateDateInfo();
+        setInterval(updateDateInfo, 1000 * 60); // 每分钟刷新一次
+        const showDateInfo = localStorage.getItem('showDateInfo');
+        setDateInfoVisible(showDateInfo === '1');
+
+        searchInputBox.addEventListener('keydown', function(e) {
+            const suggestions = document.querySelectorAll('.suggestion-item');
+            if (suggestions.length > 0) {
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    currentSuggestionIndex = (currentSuggestionIndex + 1) % suggestions.length;
+                    updateSuggestionHighlight(suggestions);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    currentSuggestionIndex = (currentSuggestionIndex - 1 + suggestions.length) % suggestions.length;
+                    updateSuggestionHighlight(suggestions);
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (currentSuggestionIndex >= 0) {
+                        suggestions[currentSuggestionIndex].click();
+                    }
+                }
+            }
+        });
+
+        function updateSuggestionHighlight(suggestions) {
+            suggestions.forEach((item, index) => {
+                if (index === currentSuggestionIndex) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+
         function toggleSearchEngine() {
-            var searchEngineButton = document.getElementById('searchEngineButton');
-            if (currentSearchEngine === 'Baidu') {
-                currentSearchEngine = 'Bing';
-                searchEngineButton.textContent = 'Bing';
+            const logo = document.getElementById('searchLogo');
+            const form = document.getElementById('searchForm');
+            const searchInput = document.getElementById('searchInput');
+            
+            if (logo.textContent === 'Baidu') {
+                logo.textContent = 'Bing';
+                form.action = 'https://www.bing.com/search';
+                searchInput.name = 'q';
             } else {
-                currentSearchEngine = 'Baidu';
-                searchEngineButton.textContent = 'Baidu';
+                logo.textContent = 'Baidu';
+                form.action = 'https://www.baidu.com/s';
+                searchInput.name = 'wd';
             }
         }
 
-        // 弹出提示框
-        function showAlert(message) {
-            alert(message);
+        function toggleDefaultSearchEngine() {
+            const currentEngine = localStorage.getItem('defaultSearchEngine') || 'Baidu';
+            const newEngine = currentEngine === 'Baidu' ? 'Bing' : 'Baidu';
+            localStorage.setItem('defaultSearchEngine', newEngine);
+            setDefaultSearchEngine(newEngine);
         }
 
-        // 更改页面背景颜色（使用颜色选择器）
-        function changeBackgroundColorWithPicker() {
-            var colorPicker = document.getElementById('colorPicker');
-            colorPicker.click(); // 触发颜色选择器的点击事件
-        }
-
-        // 更新背景颜色
-        function updateBackgroundColor() {
-            var newColor = document.getElementById('colorPicker').value;
-            document.body.style.backgroundColor = newColor;
-        }
-
-        // 回车键搜索事件
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Enter') {
-                searchOnSearchEngine();
-            }
-        });
-
-        // 页面加载时，加载用户偏好设置和自动切换搜索引擎
-        window.onload = function() {
-            var body = document.body;
-            var storedMode = localStorage.getItem('mode'); // 获取存储的模式
-            if (storedMode === 'light') {
-                body.classList.add('light-mode');
-                isLightMode = true;
+        function setDefaultSearchEngine(engine) {
+            const logo = document.getElementById('searchLogo');
+            const form = document.getElementById('searchForm');
+            const searchInput = document.getElementById('searchInput');
+            if (engine === 'Bing') {
+                logo.textContent = 'Bing';
+                form.action = 'https://www.bing.com/search';
+                searchInput.name = 'q';
             } else {
-                isLightMode = false;
-            }
-
-
-
-            // 初始化切换搜索引擎为Baidu
-            toggleSearchEngine();
-			toggleSearchEngine();
-			// 默认显示日期
-			toggleDateDisplay();
-			// 初始化深浅色按钮
-			toggleBackground();
-			toggleBackground();
-			// 初始化按钮隐藏按钮
-			toggleIconVisibility(); 
-			
-			
-			
-        };
-
-        // 页面关闭时，保存用户偏好设置
-        window.onbeforeunload = function() {
-            var body = document.body;
-            if (isLightMode) {
-                localStorage.setItem('mode', 'light');
-            } else {
-                localStorage.setItem('mode', 'dark');
-            }
-        };
-
-        // 更新日期显示
-        function updateDateDisplay() {
-            var dateDisplay = document.getElementById('dateDisplay');
-            var currentDate = new Date();
-            var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            dateDisplay.textContent = currentDate.toLocaleDateString('zh-CN', options);
-        }
-
-		/*
-        // 打开天气查询页面（新建标签页）
-        function openWeatherPage() {
-            var weatherUrl = 'https://www.msn.cn/zh-cn/weather/';
-            window.open(weatherUrl, '_blank');
-        }
-		*/
-
-		// 打开天气查询页面（当前标签页）
-		function openWeatherPage() {
-			var weatherUrl = 'https://www.msn.cn/zh-cn/weather/';
-			window.location.href = weatherUrl;
-		}
-
-        // 切换日期显示
-        function toggleDateDisplay() {
-            var dateDisplay = document.getElementById('dateDisplay');
-            if (dateDisplay.style.display === 'none') {
-                dateDisplay.style.display = 'block';
-                updateDateDisplay();
-            } else {
-                dateDisplay.style.display = 'none';
+                logo.textContent = 'Baidu';
+                form.action = 'https://www.baidu.com/s';
+                searchInput.name = 'wd';
             }
         }
 
-        // 在页面加载完毕后更新日期显示
-        window.addEventListener('load', function() {
-            updateDateDisplay();
-        });
-		
-		
-		// 切换图标显示状态
-		function toggleIconVisibility() {
-			var icon1 = document.getElementById('changeColorButton');
-			var icon2 = document.getElementById('alertButton');
-			var icon3 = document.getElementById('dateIcon');
-			if (icon1.style.opacity === '0') {
-			// 如果图标被隐藏，显示出来
-			setTimeout(function() {
-				icon1.style.opacity = '1';
-				icon1.style.pointerEvents = 'auto'; // 启用交互
-				icon2.style.opacity = '1';
-				icon2.style.pointerEvents = 'auto'; // 启用交互
-				icon3.style.opacity = '1';
-				icon3.style.pointerEvents = 'auto'; // 启用交互
-			}, 50); // 添加延迟以确保过渡效果能够生效
-			// 更新按钮文本为折叠状态
-			document.getElementById('collapseButton').textContent = '🖐';
-			} else {
-				// 如果图标可见，隐藏起来
-				icon1.style.opacity = '0';
-				icon1.style.pointerEvents = 'none'; // 禁用交互
-				icon2.style.opacity = '0';
-				icon2.style.pointerEvents = 'none'; // 禁用交互
-				icon3.style.opacity = '0';
-				icon3.style.pointerEvents = 'none'; // 禁用交互
-				// 更新按钮文本为展开状态
-				document.getElementById('collapseButton').textContent = '🤏';
-		}
-	}
-		
+        // 初始化默认搜索引擎
+        const defaultEngine = localStorage.getItem('defaultSearchEngine') || 'Baidu';
+        setDefaultSearchEngine(defaultEngine);
     </script>
 </body>
-</html>
+</html> 
