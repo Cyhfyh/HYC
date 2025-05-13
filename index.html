@@ -45,8 +45,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            position: absolute;
-            top: 33vh;
+            margin-top: 33vh;
             left: 0;
             right: 0;
         }
@@ -62,10 +61,10 @@
         }
 
         .logo {
-            font-size: 3em;
+            font-size: 4em;
             font-weight: 900;
-            margin-bottom: 24px;
-            color: var(--text-color);
+            margin-bottom: 20px;
+            color: var(--logo-color, var(--text-color));
             letter-spacing: 2px;
             cursor: pointer;
         }
@@ -73,7 +72,7 @@
         .date-info {
             margin-top: 12px;
             font-size: 1.1em;
-            color: var(--text-color);
+            color: var(--logo-color, var(--text-color));
             font-weight: 500;
             letter-spacing: 1px;
             user-select: none;
@@ -95,6 +94,7 @@
             width: 100%;
             max-width: 500px;
             margin: 0 auto;
+            z-index: 1;
         }
 
         .search-form.focus .search-box,
@@ -181,6 +181,7 @@
             flex-direction: column;
             align-items: flex-end;
             gap: 10px;
+            z-index: 9999;
         }
 
         .settings-button {
@@ -197,6 +198,8 @@
             align-items: center;
             justify-content: center;
             z-index: 1001;
+            opacity: 0;
+            transform: translateX(-100vw);
         }
 
         .settings-button:hover {
@@ -207,9 +210,10 @@
         }
 
         .settings-menu {
-            position: absolute;
-            top: 50px;
-            right: 0;
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            z-index: 10000;
             background-color: var(--container-bg);
             border-radius: 12px;
             box-shadow: 0 4px 12px var(--shadow-color);
@@ -221,7 +225,6 @@
             transform: scale(0);
             opacity: 0;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 1000;
         }
 
         .settings-menu.active {
@@ -268,7 +271,7 @@
             background-color: var(--container-bg);
             border-radius: 12px;
             box-shadow: 0 4px 12px var(--shadow-color);
-            z-index: 1000;
+            z-index: 1;
             display: none;
             overflow: hidden;
         }
@@ -331,7 +334,7 @@
             left: 20px;
             display: flex;
             gap: 10px;
-            z-index: 1001;
+            z-index: 1;
         }
 
         .nav-button {
@@ -347,6 +350,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            opacity: 0;
+            transform: translateX(-100vw);
         }
 
         .nav-button:hover {
@@ -361,6 +366,29 @@
 
         .settings-button i {
             font-size: 16px;
+        }
+
+        .settings-button-list {
+            position: relative;
+            z-index: 1000;
+        }
+
+        @keyframes slide-in-from-top {
+            0% { opacity: 0; transform: translateY(-100px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .nav-button.animated, .settings-button.animated {
+            opacity: 0;
+            animation: slide-in-from-top 0.7s cubic-bezier(.4,0,.2,1) forwards;
+        }
+
+        @keyframes search-icon-zoom {
+            0% { transform: scale(10); opacity: 0; }
+            60% { opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .search-button .fa-search.icon-zoom-anim {
+            animation: search-icon-zoom 0.7s cubic-bezier(.4,0,.2,1);
         }
     </style>
 </head>
@@ -396,6 +424,25 @@
                 <i class="fas fa-search"></i>
                 <span>默认引擎</span>
             </button>
+            <button class="settings-item" onclick="openBgColorPicker()">
+                <i class="fas fa-fill-drip"></i>
+                <span>背景颜色</span>
+            </button>
+            <button class="settings-item" onclick="openTextColorPicker()">
+                <i class="fas fa-palette"></i>
+                <span>内容颜色</span>
+            </button>
+            <button class="settings-item" onclick="resetColors()">
+                <i class="fas fa-undo"></i>
+                <span>默认颜色</span>
+            </button>
+            <button class="settings-item" onclick="openBgImagePicker()">
+                <i class="fas fa-image"></i>
+                <span>背景图片</span>
+            </button>
+            <input type="color" id="bgColorPicker" style="display:none;">
+            <input type="color" id="textColorPicker" style="display:none;">
+            <input type="file" id="bgImagePicker" accept="image/*" style="display:none;">
         </div>
     </div>
     <div class="main-content">
@@ -424,6 +471,7 @@
             const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
+            setLogoColorByCustom();
         }
 
         function toggleSettings() {
@@ -479,7 +527,7 @@
         suggestionsContainer.addEventListener('click', function(e) {
             const item = e.target.closest('.suggestion-item');
             if (item) {
-                searchInput.value = item.textContent;
+                searchInput.value = item.textContent.trim().replace(/\s+/g, ' ');
                 document.getElementById('searchForm').submit();
             }
         });
@@ -657,6 +705,148 @@
         // 初始化默认搜索引擎
         const defaultEngine = localStorage.getItem('defaultSearchEngine') || 'Baidu';
         setDefaultSearchEngine(defaultEngine);
+
+        document.getElementById('searchForm').addEventListener('submit', function(event) {
+            const searchInput = document.getElementById('searchInput');
+            searchInput.value = searchInput.value.trim().replace(/\s+/g, ' ');
+        });
+
+        function openBgColorPicker() {
+            document.getElementById('bgColorPicker').click();
+        }
+        function openTextColorPicker() {
+            document.getElementById('textColorPicker').click();
+        }
+
+        function setLogoColorByCustom() {
+            const customBg = localStorage.getItem('customBgColor');
+            const customImg = localStorage.getItem('customBgImage');
+            if (customBg || customImg) {
+                // 跟随搜索框底色
+                document.documentElement.style.setProperty('--logo-color', getComputedStyle(document.documentElement).getPropertyValue('--container-bg'));
+            } else {
+                // 跟随主题色
+                document.documentElement.style.setProperty('--logo-color', getComputedStyle(document.documentElement).getPropertyValue('--text-color'));
+            }
+        }
+
+        // 在设置背景色时调用
+        document.getElementById('bgColorPicker').addEventListener('input', function() {
+            document.documentElement.style.setProperty('--bg-color', this.value);
+            localStorage.setItem('customBgColor', this.value);
+            setLogoColorByCustom();
+        });
+
+        document.getElementById('textColorPicker').addEventListener('input', function() {
+            document.documentElement.style.setProperty('--text-color', this.value);
+            localStorage.setItem('customTextColor', this.value);
+        });
+
+        // 恢复默认颜色时调用
+        function resetColors() {
+            document.documentElement.style.setProperty('--bg-color', '');
+            document.documentElement.style.setProperty('--text-color', '');
+            localStorage.removeItem('customBgColor');
+            localStorage.removeItem('customTextColor');
+            localStorage.removeItem('customBgImage');
+            document.body.style.backgroundImage = '';
+            setLogoColorByCustom();
+            // location.reload();
+        }
+
+        // 页面加载时调用一次
+        window.addEventListener('DOMContentLoaded', function() {
+            const bg = localStorage.getItem('customBgColor');
+            const text = localStorage.getItem('customTextColor');
+            if(bg) document.documentElement.style.setProperty('--bg-color', bg);
+            if(text) document.documentElement.style.setProperty('--text-color', text);
+            const topLeft = document.querySelector('.top-left-buttons');
+            const navButtons = Array.from(document.querySelectorAll('.top-left-buttons .nav-button'));
+            navButtons.forEach((btn) => {
+                btn.classList.add('animated');
+                btn.addEventListener('animationend', function() {
+                    btn.style.opacity = '1';
+                }, { once: true });
+            });
+            // 设置按钮动画
+            const settingsBtn = document.querySelector('.settings-button');
+            settingsBtn.classList.add('animated');
+            settingsBtn.addEventListener('animationend', function() {
+                settingsBtn.style.opacity = '1';
+            }, { once: true });
+            setLogoColorByCustom();
+            const bgImg = localStorage.getItem('customBgImage');
+            if(bgImg) {
+                document.body.style.backgroundImage = `url('${bgImg}')`;
+                document.body.style.backgroundSize = 'cover';
+                document.body.style.backgroundPosition = 'center';
+            } else {
+                document.body.style.backgroundImage = '';
+            }
+            const searchIcon = document.querySelector('.search-button .fa-search');
+            if (searchIcon) {
+                searchIcon.classList.add('icon-zoom-anim');
+                setTimeout(() => {
+                    searchIcon.classList.remove('icon-zoom-anim');
+                }, 800);
+            }
+        });
+
+        function openBgImagePicker() {
+            document.getElementById('bgImagePicker').click();
+        }
+        document.getElementById('bgImagePicker').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const img = new window.Image();
+                img.onload = function() {
+                    // 计算目标尺寸
+                    let maxW = 1920, maxH = 1080;
+                    let w = img.width, h = img.height;
+                    if (w > maxW || h > maxH) {
+                        const ratio = Math.min(maxW / w, maxH / h);
+                        w = Math.round(w * ratio);
+                        h = Math.round(h * ratio);
+                    }
+                    // 画布压缩
+                    const canvas = document.createElement('canvas');
+                    canvas.width = w;
+                    canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, w, h);
+                    // 压缩为jpeg，质量0.8
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                    document.body.style.backgroundImage = `url('${dataUrl}')`;
+                    document.body.style.backgroundSize = 'cover';
+                    document.body.style.backgroundPosition = 'center';
+                    localStorage.setItem('customBgImage', dataUrl);
+                    // 自动判断图片明暗
+                    try {
+                        const imageData = ctx.getImageData(0, 0, w, h).data;
+                        let r = 0, g = 0, b = 0, count = 0;
+                        for (let i = 0; i < imageData.length; i += 4*100) { // 每100像素采样一次，加快速度
+                            r += imageData[i];
+                            g += imageData[i+1];
+                            b += imageData[i+2];
+                            count++;
+                        }
+                        const avg = (r + g + b) / (3 * count);
+                        if (avg < 128) {
+                            document.documentElement.setAttribute('data-theme', 'dark');
+                            localStorage.setItem('theme', 'dark');
+                        } else {
+                            document.documentElement.setAttribute('data-theme', 'light');
+                            localStorage.setItem('theme', 'light');
+                        }
+                        setLogoColorByCustom();
+                    } catch (e) {}
+                };
+                img.src = evt.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
     </script>
 </body>
 </html> 
