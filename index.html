@@ -390,9 +390,40 @@
         .search-button .fa-search.icon-zoom-anim {
             animation: search-icon-zoom 0.7s cubic-bezier(.4,0,.2,1);
         }
+
+        .bg-blur-balls {
+            position: fixed;
+            left: 0; top: 0; width: 100vw; height: 100vh;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .bg-blur-balls span {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(40px);
+            opacity: 0.18;
+            mix-blend-mode: lighten;
+        }
+        .bg-blur-balls .ball1 {
+            width: 320px; height: 320px;
+            background: #fffbe6;
+            left: 10vw; top: 20vh;
+        }
+        .bg-blur-balls .ball2 {
+            width: 400px; height: 400px;
+            background: #e6f7ff;
+            left: 60vw; top: 10vh;
+        }
+        .bg-blur-balls .ball3 {
+            width: 260px; height: 260px;
+            background: #ffe6fa;
+            left: 40vw; top: 60vh;
+        }
     </style>
 </head>
 <body>
+    <div class="bg-blur-balls"></div>
     <div class="top-left-buttons">
         <button class="nav-button" onclick="window.location.href='https://map.baidu.com'">
             <i class="fas fa-map"></i>
@@ -790,6 +821,49 @@
                     searchIcon.classList.remove('icon-zoom-anim');
                 }, 800);
             }
+            const bgBalls = document.querySelector('.bg-blur-balls');
+            if (bgBalls && bgBalls.children.length === 0) {
+                // 根据屏幕宽度动态生成光斑数量
+                let num = 3;
+                const w = window.innerWidth;
+                if (w >= 1400) num = 8;
+                else if (w >= 800) num = 5;
+                let ballsHtml = '';
+                for (let i = 0; i < num; i++) {
+                    ballsHtml += `<span class="ball ball${i+1}"></span>`;
+                }
+                bgBalls.innerHTML = ballsHtml;
+            }
+            // 随机移动动画
+            function animateBall(ball, baseLeft, baseTop, rangeX, rangeY, duration, size, color) {
+                ball.style.width = size + 'px';
+                ball.style.height = size + 'px';
+                ball.style.background = color;
+                function move() {
+                    const x = baseLeft + (Math.random() - 0.5) * rangeX;
+                    const y = baseTop + (Math.random() - 0.5) * rangeY;
+                    ball.style.transition = `left ${duration}ms linear, top ${duration}ms linear`;
+                    ball.style.left = x + 'vw';
+                    ball.style.top = y + 'vh';
+                    setTimeout(move, duration);
+                }
+                move();
+            }
+            // 生成参数
+            const colorList = ['#fffbe6','#e6f7ff','#ffe6fa','#e6ffe9','#f0e6ff','#e6f0ff','#fff0e6','#e6fff7'];
+            const balls = Array.from(bgBalls.children).map((el, i) => {
+                const baseLeft = 10 + Math.random() * 80; // 10vw~90vw
+                const baseTop = 10 + Math.random() * 70;  // 10vh~80vh
+                const rangeX = 20 + Math.random() * 30;   // 20~50vw
+                const rangeY = 30 + Math.random() * 30;   // 30~60vh
+                const duration = 9000 + Math.random() * 6000; // 9~15s
+                const size = 220 + Math.random() * 280;   // 220~500px
+                const color = colorList[i % colorList.length];
+                return {el, baseLeft, baseTop, rangeX, rangeY, duration, size, color};
+            });
+            balls.forEach(b => {
+                if (b.el) animateBall(b.el, b.baseLeft, b.baseTop, b.rangeX, b.rangeY, b.duration, b.size, b.color);
+            });
         });
 
         function openBgImagePicker() {
