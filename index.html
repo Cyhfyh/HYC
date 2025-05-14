@@ -47,6 +47,7 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             transition: background-color 0.3s, color 0.3s;
+            overflow: hidden; /* 隐藏滚动条 */
         }
 
         .main-content {
@@ -877,6 +878,7 @@
                 btn.classList.add('animated');
                 btn.addEventListener('animationend', function() {
                     btn.style.opacity = '1';
+                    document.body.style.overflow = 'auto'; /* 动画结束后恢复滚动条 */
                 }, { once: true });
             });
             // 设置按钮动画
