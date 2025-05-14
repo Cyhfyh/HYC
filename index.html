@@ -13,7 +13,12 @@
             --border-color: #ddd;
             --shadow-color: rgba(0, 0, 0, 0.1);
             --hover-color: #4285f4;
-            --primary-color: #4285f4;
+            --primary-color: #4285f4; /* 主色调（按钮互动颜色） */
+            --search-bg-opacity: 0.6;   /*搜索框透明度*/
+            --button-bg-opacity: 0.6;   /*顶部按钮透明度*/
+            --logo-opacity: 0.6;        /*搜索引擎名称透明度*/
+            --settings-bg-opacity: 0.6; /*设置页面按钮列表透明度*/
+            --date-info-opacity: 0.7; /* 新增变量用于控制日期信息的透明度 */
         }
 
         [data-theme="dark"] {
@@ -24,6 +29,10 @@
             --shadow-color: rgba(0, 0, 0, 0.3);
             --hover-color: #4285f4;
             --primary-color: #4285f4;
+        }
+
+        [data-theme="light"] .logo {
+            color: var(--logo-color, var(--text-color)); /* 设置为与日期信息相同的颜色 */
         }
 
         body {
@@ -64,9 +73,10 @@
             font-size: 4em;
             font-weight: 900;
             margin-bottom: 20px;
-            color: var(--logo-color, var(--text-color));
+            color: rgba(255, 255, 255, var(--logo-opacity));
             letter-spacing: 2px;
             cursor: pointer;
+            -webkit-text-stroke: 1px var(--border-color); /* 增加描边效果 */
         }
 
         .date-info {
@@ -77,6 +87,7 @@
             letter-spacing: 1px;
             user-select: none;
             transition: opacity 0.3s;
+            opacity: var(--date-info-opacity);
         }
         .date-info.hide {
             opacity: 0;
@@ -124,7 +135,7 @@
             border-radius: 30px 0 0 30px;
             outline: none;
             transition: all 0.3s;
-            background-color: var(--container-bg);
+            background-color: rgba(255, 255, 255, var(--search-bg-opacity));
             color: var(--text-color);
             height: 48px;
             box-sizing: border-box;
@@ -147,6 +158,7 @@
             font-size: 20px;
             margin-left: 0;
             box-sizing: border-box;
+            background-color: rgba(255, 255, 255, var(--search-bg-opacity));
         }
 
         .search-button i {
@@ -185,21 +197,17 @@
         }
 
         .settings-button {
-            padding: 10px;
-            background-color: var(--container-bg);
-            border: 2px solid var(--border-color);
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.3s;
-            color: var(--text-color);
             width: 40px;
             height: 40px;
+            margin: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 1001;
-            opacity: 0;
-            transform: translateX(-100vw);
+            border-radius: 50%;
+            background-color: var(--container-bg);
+            border: 2px solid var(--border-color);
+            transition: all 0.3s;
+            color: var(--text-color);
         }
 
         .settings-button:hover {
@@ -214,7 +222,7 @@
             top: 70px;
             right: 20px;
             z-index: 10000;
-            background-color: var(--container-bg);
+            background-color: rgba(255, 255, 255, var(--settings-bg-opacity));
             border-radius: 12px;
             box-shadow: 0 4px 12px var(--shadow-color);
             padding: 10px;
@@ -308,7 +316,7 @@
 
         @media (max-width: 600px) {
             .main-content {
-                margin-top: 10vh;
+                margin-top: 15vh;
                 top: 0;
                 left: 0;
                 right: 0;
@@ -327,25 +335,25 @@
                 box-sizing: border-box;
             }
             .logo {
-                font-size: 2em;
-                margin-bottom: 16px;
+                font-size: 3.2em;
+                margin-bottom: 20px;
                 text-align: center;
                 word-break: break-all;
             }
             .search-form {
                 max-width: 98vw;
-                width: 100%;
+                width: 85%;
                 flex-direction: row;
                 align-items: center;
             }
             .search-box, .search-button {
-                height: 40px;
+                height: 43px;
                 font-size: 15px;
                 line-height: 40px;
             }
             .top-left-buttons, .settings-container {
                 position: fixed;
-                top: 12px;
+                top: 20px;
                 z-index: 1000;
             }
             .top-left-buttons {
@@ -354,9 +362,17 @@
                 gap: 6px;
             }
             .settings-container {
-                right: 8px;
+                right: 20px;
             }
             .nav-button, .settings-button {
+                width: 40px;
+                height: 40px;
+                margin: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .settings-button {
                 width: 40px;
                 height: 40px;
                 margin: 0;
@@ -390,6 +406,7 @@
             justify-content: center;
             opacity: 0;
             transform: translateX(-100vw);
+            background-color: rgba(255, 255, 255, var(--button-bg-opacity));
         }
 
         .nav-button:hover {
@@ -400,6 +417,28 @@
 
         .nav-button i {
             font-size: 13px;
+        }
+
+        .settings-button {
+            width: 40px;
+            height: 40px;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: var(--container-bg);
+            border: 2px solid var(--border-color);
+            transition: all 0.3s;
+            color: var(--text-color);
+            background-color: rgba(255, 255, 255, var(--button-bg-opacity));
+        }
+
+        .settings-button:hover {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            transform: rotate(90deg);
         }
 
         .settings-button i {
@@ -819,8 +858,11 @@
             localStorage.removeItem('customTextColor');
             localStorage.removeItem('customBgImage');
             document.body.style.backgroundImage = '';
+            updateLogoColor();
+            // 恢复主题为默认浅色
+            document.documentElement.setAttribute('data-theme', 'light');
+            localStorage.setItem('theme', 'light');
             setLogoColorByCustom();
-            // location.reload();
         }
 
         // 页面加载时调用一次
@@ -968,6 +1010,44 @@
             if (bgBalls) {
                 bgBalls.style.height = Math.max(document.body.scrollHeight, window.innerHeight) + 'px';
             }
+        }
+
+        function updateLogoColor() {
+            const customBg = localStorage.getItem('customBgColor');
+            const logo = document.querySelector('.logo');
+            if (customBg) {
+                // 用户手动设置了背景颜色，Baidu字样为白色透明
+                logo.style.color = `rgba(255, 255, 255, var(--logo-opacity))`;
+            } else {
+                // 默认主题浅色模式，Baidu字样为黑色
+                logo.style.color = `var(--logo-color, var(--text-color))`;
+            }
+        }
+
+        // 页面加载时调用一次
+        window.addEventListener('DOMContentLoaded', function() {
+            updateLogoColor();
+        });
+
+        // 在设置背景色时调用
+        document.getElementById('bgColorPicker').addEventListener('input', function() {
+            localStorage.setItem('customBgColor', this.value);
+            updateLogoColor();
+        });
+
+        // 恢复默认颜色时调用
+        function resetColors() {
+            document.documentElement.style.setProperty('--bg-color', '');
+            document.documentElement.style.setProperty('--text-color', '');
+            localStorage.removeItem('customBgColor');
+            localStorage.removeItem('customTextColor');
+            localStorage.removeItem('customBgImage');
+            document.body.style.backgroundImage = '';
+            updateLogoColor();
+            // 恢复主题为默认浅色
+            document.documentElement.setAttribute('data-theme', 'light');
+            localStorage.setItem('theme', 'light');
+            setLogoColorByCustom();
         }
     </script>
 </body>
