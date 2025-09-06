@@ -1129,8 +1129,8 @@
                 const x = e.clientX - rect.left - rect.width / 2;
                 const y = e.clientY - rect.top - rect.height / 2;
 
-                const rotateX = (y / rect.height) * 50;
-                const rotateY = (x / rect.width) * -50;
+                const rotateX = (y / rect.height) * 10;
+                const rotateY = (x / rect.width) * -10;
 
                 searchForm.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
             });
@@ -1146,7 +1146,7 @@
         // const searchForm = document.querySelector(".search-form");
 
         // 监听输入框的focus事件
-        SearchInput.addEventListener("focus", function () {
+        SearchInput.addEventListener("input", function () {
             yuanshimargin = searchContainer.style.marginTop
             searchContainer.style.marginTop = "-100px";
             searchContainer.style.transition = "margin-top 0.5s ease";
@@ -1154,9 +1154,8 @@
 
         // 监听输入框的blur事件,当失去焦点时恢复原位
         SearchInput.addEventListener("blur", function () {
-            if (!SearchInput.value) { // 如果输入框为空才恢复
-                searchContainer.style.marginTop = `${yuanshimargin}`;
-            }
+            searchContainer.style.marginTop = `${yuanshimargin}`;
+
         });
     </script>
 </body>
