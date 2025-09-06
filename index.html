@@ -1,6 +1,28 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 
+<!-- 
+                                _ooOoo_
+                               o8888888o
+                               88" . "88
+                               (| -_- |)
+                                O\ = /O
+                            ____/`---'\____
+                              .' \\| |// `
+                           / \\||| : |||// \
+                         / _||||| -:- |||||- \
+                           | | \\\ - /// | |
+                         | \_| ''\---/'' | |
+                          \ .-\__ `-` ___/-. /
+                       ___`. .' /--.--\ `. . __
+                    ."" '< `.___\_<|>_/___.' >'""
+                   | | : `- \`.;`\ _ /`;.`/ - ` : | |
+                     \ \ `-. \_ __\ /__ _/ .-` / /
+             ======`-.____`-.___\_____/___.-`____.-'======
+                                `=---='
+ -->
+
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -370,6 +392,7 @@
                 width: 90%;
                 flex-direction: row;
                 align-items: center;
+                transition: transform 0.3s ease;
             }
 
             .search-box,
@@ -1127,18 +1150,25 @@
             const searchForm = document.getElementById('searchForm');
 
             window.addEventListener('mousemove', (e) => {
+                console.log("鼠标进入页面");
                 const rect = searchContainer.getBoundingClientRect();
                 const x = e.clientX - rect.left - rect.width / 2;
                 const y = e.clientY - rect.top - rect.height / 2;
-
-                const rotateX = (y / rect.height) * 10;
+                const rotateX = (y / rect.height) * 5;
                 const rotateY = (x / rect.width) * -10;
-
                 searchForm.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
             });
 
-            searchContainer.addEventListener('mouseleave', () => {
-                searchForm.style.transform = '';
+            // 监听鼠标离开窗口事件
+            document.addEventListener('mouseleave', (e) => {
+                // 检查鼠标是否真的离开了页面范围
+                if (e.clientY <= 0 || e.clientY >= window.innerHeight ||
+                    e.clientX <= 0 || e.clientX >= window.innerWidth) {
+                    console.log("鼠标离开页面");
+                    setTimeout(() => {
+                        searchForm.style.transform = 'rotateX(0deg) rotateY(0deg)';
+                    }, 10);
+                }
             });
         }); // <-- Close DOMContentLoaded listener
 
@@ -1179,4 +1209,3 @@
 </body>
 
 </html>
-
