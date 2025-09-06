@@ -1139,6 +1139,25 @@
                 searchForm.style.transform = '';
             });
         }); // <-- Close DOMContentLoaded listener
+
+        // 输入内容时，搜索控件部分上移
+        const searchContainer = document.querySelector(".search-container");
+        const SearchInput = document.querySelector(".search-box");
+        // const searchForm = document.querySelector(".search-form");
+
+        // 监听输入框的focus事件
+        SearchInput.addEventListener("focus", function () {
+            yuanshimargin = searchContainer.style.marginTop
+            searchContainer.style.marginTop = "-100px";
+            searchContainer.style.transition = "margin-top 0.5s ease";
+        });
+
+        // 监听输入框的blur事件,当失去焦点时恢复原位
+        SearchInput.addEventListener("blur", function () {
+            if (!SearchInput.value) { // 如果输入框为空才恢复
+                searchContainer.style.marginTop = `${yuanshimargin}`;
+            }
+        });
     </script>
 </body>
 
