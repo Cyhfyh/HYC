@@ -1153,9 +1153,15 @@
         });
 
         // 监听输入框的blur事件,当失去焦点时恢复原位
-        SearchInput.addEventListener("blur", function () {
-            searchContainer.style.marginTop = `${yuanshimargin}`;
-
+        searchInput.addEventListener("blur", function () {
+            // 设置一个短暂延时,等待搜索建议框消失后再复位
+            setTimeout(() => {
+                // 检查搜索建议框是否处于隐藏状态
+                if (!suggestionsContainer.classList.contains('active')) {
+                    const searchContainer = document.querySelector('.search-container');
+                    searchContainer.style.marginTop = `50px`;
+                }
+            }, 200);
         });
     </script>
 </body>
