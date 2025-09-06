@@ -39,6 +39,7 @@
         }
 
         [data-theme="light"] .logo {
+            display: none;
             color: var(--logo-color, var(--text-color));
             /* 设置为与日期信息相同的颜色 */
         }
@@ -1143,13 +1144,15 @@
         // 输入内容时，搜索控件部分上移
         const searchContainer = document.querySelector(".search-container");
         const SearchInput = document.querySelector(".search-box");
+        const Logo = document.querySelector(".logo")
         // const searchForm = document.querySelector(".search-form");
 
         // 监听输入框的focus事件
         SearchInput.addEventListener("input", function () {
             yuanshimargin = searchContainer.style.marginTop
-            searchContainer.style.marginTop = "-100px";
-            searchContainer.style.transition = "margin-top 0.5s ease";
+            searchContainer.style.marginTop = "-15%";
+            searchContainer.style.transition = "margin-top .8s ease";
+            // Logo.style.display = "none"
         });
 
         // 监听输入框的blur事件,当失去焦点时恢复原位
@@ -1160,9 +1163,17 @@
                 if (!suggestionsContainer.classList.contains('active')) {
                     const searchContainer = document.querySelector('.search-container');
                     searchContainer.style.marginTop = `50px`;
+                    // Logo.style.display = "block"
                 }
             }, 200);
         });
+
+        // 在输入框提示当前搜索引擎，切换引擎时刷新当前引擎
+        const cut_engine = document.querySelector("#toggleSearchEngineBtn")
+        SearchInput.placeholder = "Use " + Logo.innerText + " Engine..."
+        cut_engine.addEventListener("click", function () {
+            SearchInput.placeholder = "Use " + Logo.innerText + " Engine..."
+        })
     </script>
 </body>
 
