@@ -112,6 +112,7 @@
             cursor: pointer;
             -webkit-text-stroke: 1px var(--border-color);
             /* 增加描边效果 */
+            display: none;
         }
 
         .date-info {
@@ -317,8 +318,9 @@
             transform: translateX(-50%);
             width: 100%;
             max-width: 500px;
-            background-color: var(--container-bg);
-            border-radius: 12px;
+            /* background-color: var(--container-bg); */
+            background-color: rgba(255, 255, 255, var(--search-bg-opacity));
+            border-radius: 20px;
             box-shadow: 0 4px 12px var(--shadow-color);
             z-index: 1;
             display: none;
@@ -385,6 +387,7 @@
                 /*搜索引擎名称与搜索框之间的距离*/
                 text-align: center;
                 word-break: break-all;
+                /* display: none; */
             }
 
             .search-form {
@@ -672,6 +675,7 @@
             const currentTheme = document.documentElement.getAttribute('data-theme');
             const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', newTheme);
+            // document.querySelector(".searchLogo").style.display = "none"
             localStorage.setItem('theme', newTheme);
             setLogoColorByCustom();
         }
@@ -718,11 +722,7 @@
                 suggestionsContainer.classList.remove('active');
                 return;
             }
-
-            // 设置新的定时器，延迟300ms发送请求
-            suggestionTimeout = setTimeout(() => {
-                fetchSuggestions(query);
-            }, 300);
+            fetchSuggestions(query);
         });
 
         // 点击建议项时进行搜索
@@ -935,6 +935,7 @@
         // 在设置背景色时调用
         document.getElementById('bgColorPicker').addEventListener('input', function () {
             document.documentElement.style.setProperty('--bg-color', this.value);
+            // document.querySelector(".logo").style.display = "none"
             localStorage.setItem('customBgColor', this.value);
             setLogoColorByCustom();
         });
@@ -994,7 +995,7 @@
                 searchIcon.classList.add('icon-zoom-anim');
                 setTimeout(() => {
                     searchIcon.classList.remove('icon-zoom-anim');
-                }, 800);
+                }, 0);
             }
             const bgBalls = document.querySelector('.bg-blur-balls');
             if (bgBalls && bgBalls.children.length === 0) {
@@ -1181,7 +1182,7 @@
         // 监听输入框的focus事件
         SearchInput.addEventListener("input", function () {
             yuanshimargin = searchContainer.style.marginTop
-            searchContainer.style.marginTop = "-15%";
+            searchContainer.style.marginTop = "-5%";
             searchContainer.style.transition = "margin-top .8s ease";
             // Logo.style.display = "none"
         });
