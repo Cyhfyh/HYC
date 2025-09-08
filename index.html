@@ -1206,6 +1206,19 @@
         cut_engine.addEventListener("click", function () {
             SearchInput.placeholder = "Use " + Logo.innerText + " Engine..."
         })
+
+        // 焦点在输入框内时，按回车键进行搜索
+        const searchInput2 = document.querySelector(".search-box");
+        const searchForm2 = document.querySelector("#searchForm");
+        searchInput2.addEventListener("keydown", function (e) {
+            if (e.key === "Enter") {
+                e.preventDefault(); // 阻止默认的回车换行行为
+                // 获取当前搜索框的值
+                const searchValue = searchInput2.value.trim();
+                searchForm2.submit(); // 提交表单进行搜索
+            }
+        });
+
     </script>
 </body>
 
