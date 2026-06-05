@@ -1,0 +1,117 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+
+<!-- 
+                                _ooOoo_
+                               o8888888o
+                               88" . "88
+                               (| -_- |)
+                                O\ = /O
+                            ____/`---'\____
+                              .' \\| |// `
+                           / \\||| : |||// \
+                         / _||||| -:- |||||- \
+                           | | \\\ - /// | |
+                         | \_| ''\---/'' | |
+                          \ .-\__ `-` ___/-. /
+                       ___`. .' /--.--\ `. . __
+                    ."" '< `.___\_<|>_/___.' >'""
+                   | | : `- \`.;`\ _ /`;.`/ - ` : | |
+                     \ \ `-. \_ __\ /__ _/ .-` / /
+             ======`-.____`-.___\_____/___.-`____.-'======
+                                `=---='
+ -->
+
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HYC</title>
+    <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+    <div class="bg-blur-balls"></div>
+    <div class="top-left-buttons" id="shortcutButtons"></div>
+    <div class="settings-container">
+        <button class="settings-button" onclick="toggleSettings()">
+            <i class="fas fa-cog"></i>
+        </button>
+        <div class="settings-menu" id="settingsMenu">
+            <button class="settings-item" onclick="toggleDateInfo()" id="toggleDateBtn">
+                <i class="fas fa-calendar-day"></i>
+                <span>日期显隐</span>
+            </button>
+            <button class="settings-item" onclick="toggleDefaultSearchEngine()" id="toggleSearchEngineBtn">
+                <i class="fas fa-search"></i>
+                <span>默认引擎</span>
+            </button>
+            <button class="settings-item" onclick="openShortcutEditor()">
+                <i class="fas fa-link"></i>
+                <span>编辑入口</span>
+            </button>
+            <div class="settings-item hue-setting">
+                <i class="fas fa-fill-drip"></i>
+                <span>页面色相</span>
+                <input type="range" id="huePicker" class="hue-slider" min="0" max="359" value="214"
+                    aria-label="页面色相">
+            </div>
+            <div class="settings-item slider-setting">
+                <i class="fas fa-sun"></i>
+                <span>页面亮度</span>
+                <input type="range" id="lightnessPicker" class="lightness-slider" min="8" max="96" value="94"
+                    aria-label="页面亮度">
+            </div>
+            <button class="settings-item" onclick="resetColors()">
+                <i class="fas fa-undo"></i>
+                <span>默认颜色</span>
+            </button>
+            <button class="settings-item" onclick="openBgImagePicker()">
+                <i class="fas fa-image"></i>
+                <span>背景图片</span>
+            </button>
+            <input type="file" id="bgImagePicker" accept="image/*" style="display:none;">
+        </div>
+    </div>
+    <div class="main-content">
+        <div class="search-container">
+            <div class="logo" id="searchLogo" onclick="toggleSearchEngine()">Baidu</div>
+            <form action="https://www.baidu.com/s" method="get" id="searchForm" class="search-form">
+                <input type="text" name="wd" class="search-box" placeholder="请输入搜索内容..." autocomplete="off" autofocus
+                    id="searchInput">
+                <button type="submit" class="search-button" id="searchBtn">
+                    <i class="fas fa-search"></i>
+                </button>
+            </form>
+            <div class="suggestions-container" id="suggestionsContainer"></div>
+            <div class="date-info" id="dateInfo"></div>
+        </div>
+    </div>
+
+    <div class="shortcut-inline-editor" id="shortcutInlineEditor" aria-hidden="true">
+        <div class="shortcut-inline-header">
+            <span id="shortcutEditorTitle">快捷入口</span>
+            <button class="icon-button" type="button" onclick="exitShortcutEditMode()" aria-label="完成">
+                <i class="fas fa-check"></i>
+            </button>
+        </div>
+        <div class="shortcut-inline-fields">
+            <input type="text" id="shortcutTitleInput" aria-label="入口名称" placeholder="名称">
+            <input type="url" id="shortcutUrlInput" aria-label="跳转链接" placeholder="链接">
+            <div class="icon-picker" id="shortcutIconPicker">
+                <button class="icon-picker-trigger" type="button" onclick="toggleIconBag()" aria-label="选择图标">
+                    <i id="shortcutIconPreview" class="fas fa-star"></i>
+                    <span id="shortcutIconLabel">星标</span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div class="icon-bag" id="shortcutIconBag" aria-hidden="true"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+</body>
+
+</html>
