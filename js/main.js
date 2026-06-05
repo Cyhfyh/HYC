@@ -92,6 +92,10 @@
         document.addEventListener('click', function (e) {
             if (!e.target.closest('.search-container')) {
                 suggestionsContainer.classList.remove('active');
+                searchInput.blur();
+                searchBtn.blur();
+                setFormFocus(false);
+                setBackgroundGathered(false);
             }
         });
 

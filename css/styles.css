@@ -202,6 +202,11 @@
             transform-style: preserve-3d;
             perspective: 1000px;
             will-change: transform;
+            caret-color: transparent;
+        }
+
+        .search-box:focus {
+            caret-color: var(--text-color);
         }
 
         .search-button {
@@ -219,6 +224,8 @@
             font-size: 20px;
             margin-left: 0;
             box-sizing: border-box;
+            caret-color: transparent;
+            user-select: none;
         }
 
         .search-button i {
