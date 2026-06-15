@@ -29,6 +29,7 @@
     };
     const DEFAULT_RING_BACKGROUND = { ...DEFAULT_BACKGROUND };
     const BACKGROUND_TYPES = ['wave', 'ring'];
+    const BACKGROUND_PRESET_VERSION = 'ring-default-20260615';
 
     const DEFAULT_SHORTCUTS = [
         { title: '百度地图', url: 'https://map.baidu.com', icon: 'fas fa-map' },
@@ -61,6 +62,7 @@
         dateVisible: 'hycSearchV2DateVisible',
         dateFormat: 'hycSearchV2DateFormat',
         background: 'hycSearchV2Background',
+        backgroundPresetVersion: 'hycSearchV2BackgroundPresetVersion',
         shortcuts: 'hycSearchV2Shortcuts',
         pageVersion: 'hycSearchPageVersion'
     };
@@ -514,10 +516,24 @@
     function readBackgroundSettings() {
         try {
             const stored = JSON.parse(localStorage.getItem(STORAGE.background) || '{}');
+            if (localStorage.getItem(STORAGE.backgroundPresetVersion) !== BACKGROUND_PRESET_VERSION) {
+                const defaults = getDefaultRingBackground();
+                localStorage.setItem(STORAGE.background, JSON.stringify(defaults));
+                localStorage.setItem(STORAGE.backgroundPresetVersion, BACKGROUND_PRESET_VERSION);
+                return defaults;
+            }
+
             return normalizeBackgroundSettings(stored);
         } catch (error) {
-            return { ...DEFAULT_BACKGROUND };
+            const defaults = getDefaultRingBackground();
+            localStorage.setItem(STORAGE.background, JSON.stringify(defaults));
+            localStorage.setItem(STORAGE.backgroundPresetVersion, BACKGROUND_PRESET_VERSION);
+            return defaults;
         }
+    }
+
+    function getDefaultRingBackground() {
+        return { ...DEFAULT_RING_BACKGROUND };
     }
 
     function normalizeBackgroundSettings(settings) {
@@ -552,10 +568,11 @@
 
     function persistBackgroundSettings() {
         localStorage.setItem(STORAGE.background, JSON.stringify(backgroundSettings));
+        localStorage.setItem(STORAGE.backgroundPresetVersion, BACKGROUND_PRESET_VERSION);
     }
 
     function resetBackgroundSettings() {
-        backgroundSettings = { ...DEFAULT_BACKGROUND };
+        backgroundSettings = getDefaultRingBackground();
         syncBackgroundInputs();
         persistBackgroundSettings();
         updateSearchFormHighlights();
@@ -565,7 +582,7 @@
         if (backgroundSettings.type === 'ring') {
             backgroundSettings.type = 'wave';
         } else {
-            backgroundSettings = { ...DEFAULT_RING_BACKGROUND };
+            backgroundSettings = getDefaultRingBackground();
             syncBackgroundInputs();
         }
 
