@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HYC Search V2</title>
+    <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/search-v2.css">
+</head>
+
+<body>
+    <canvas class="shader-canvas" id="shaderCanvas" aria-hidden="true"></canvas>
+    <div class="screen-grid" aria-hidden="true"></div>
+
+    <div class="top-left-buttons" id="shortcutButtons"></div>
+
+    <div class="settings-container">
+        <button class="liquid-button circle-button settings-button" id="settingsButton" type="button" aria-label="设置">
+            <span class="liquid-label"><i class="fas fa-cog" aria-hidden="true"></i></span>
+        </button>
+
+        <div class="settings-menu" id="settingsMenu" aria-hidden="true">
+            <button class="settings-item" id="toggleDateBtn" type="button">
+                <i class="fas fa-calendar-day" aria-hidden="true"></i>
+                <span>日期显隐</span>
+            </button>
+            <button class="settings-item" id="toggleEngineBtn" type="button">
+                <i class="fas fa-search" aria-hidden="true"></i>
+                <span>默认引擎</span>
+            </button>
+            <button class="settings-item" id="editShortcutsBtn" type="button">
+                <i class="fas fa-link" aria-hidden="true"></i>
+                <span>编辑入口</span>
+            </button>
+
+            <label class="settings-item range-setting">
+                <i class="fas fa-signal" aria-hidden="true"></i>
+                <span>色带强度</span>
+                <input id="bandSizePicker" type="range" min="0.018" max="0.095" step="0.001">
+            </label>
+            <label class="settings-item range-setting">
+                <i class="fas fa-wave-square" aria-hidden="true"></i>
+                <span>色带密度</span>
+                <input id="xScalePicker" type="range" min="0.45" max="3.2" step="0.01">
+            </label>
+            <label class="settings-item range-setting">
+                <i class="fas fa-arrows-alt-v" aria-hidden="true"></i>
+                <span>波幅</span>
+                <input id="yScalePicker" type="range" min="0.12" max="0.86" step="0.01">
+            </label>
+            <label class="settings-item range-setting">
+                <i class="fas fa-bezier-curve" aria-hidden="true"></i>
+                <span>扭曲</span>
+                <input id="distortionPicker" type="range" min="0" max="0.18" step="0.001">
+            </label>
+            <label class="settings-item range-setting">
+                <i class="fas fa-forward" aria-hidden="true"></i>
+                <span>速度</span>
+                <input id="speedPicker" type="range" min="0" max="1.4" step="0.01">
+            </label>
+            <label class="settings-item range-setting">
+                <i class="fas fa-sun" aria-hidden="true"></i>
+                <span>辉光</span>
+                <input id="glowPicker" type="range" min="0.35" max="1.65" step="0.01">
+            </label>
+            <label class="settings-item range-setting">
+                <i class="fas fa-moon" aria-hidden="true"></i>
+                <span>背景暗度</span>
+                <input id="darknessPicker" type="range" min="0" max="0.16" step="0.005">
+            </label>
+            <button class="settings-item" id="resetBackgroundBtn" type="button">
+                <i class="fas fa-undo" aria-hidden="true"></i>
+                <span>默认色带</span>
+            </button>
+        </div>
+    </div>
+
+    <main class="main-content" aria-label="新版搜索页面">
+        <section class="search-container">
+            <button class="logo" id="searchLogo" type="button" aria-label="切换搜索引擎">Baidu</button>
+            <form class="search-form" id="searchForm" action="https://www.baidu.com/s" method="get" autocomplete="off">
+                <input id="searchInput" class="search-box" name="wd" type="search" placeholder="输入关键词开始搜索"
+                    spellcheck="false" autofocus>
+                <button class="liquid-button search-button" id="searchButton" type="submit" aria-label="搜索">
+                    <span class="liquid-label"><i class="fas fa-search" aria-hidden="true"></i></span>
+                </button>
+            </form>
+            <div class="suggestions-container" id="suggestionsContainer" role="listbox" aria-label="搜索建议"></div>
+            <div class="date-info" id="dateInfo"></div>
+        </section>
+    </main>
+
+    <div class="shortcut-inline-editor" id="shortcutInlineEditor" aria-hidden="true">
+        <div class="shortcut-inline-header">
+            <span id="shortcutEditorTitle">快捷入口</span>
+            <button class="liquid-button tiny-button" id="finishShortcutEditBtn" type="button" aria-label="完成">
+                <span class="liquid-label"><i class="fas fa-check" aria-hidden="true"></i></span>
+            </button>
+        </div>
+        <div class="shortcut-inline-fields">
+            <input type="text" id="shortcutTitleInput" aria-label="入口名称" placeholder="名称">
+            <input type="url" id="shortcutUrlInput" aria-label="跳转链接" placeholder="链接">
+            <div class="icon-picker" id="shortcutIconPicker">
+                <button class="icon-picker-trigger" id="shortcutIconTrigger" type="button" aria-label="选择图标">
+                    <i id="shortcutIconPreview" class="fas fa-star" aria-hidden="true"></i>
+                    <span id="shortcutIconLabel">星标</span>
+                    <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                </button>
+                <div class="icon-bag" id="shortcutIconBag" aria-hidden="true"></div>
+            </div>
+        </div>
+    </div>
+
+    <a class="liquid-button page-switch" href="index.html" aria-label="切换到旧版搜索页面">
+        <span class="liquid-label"><i class="fas fa-layer-group" aria-hidden="true"></i>旧版</span>
+    </a>
+
+    <svg class="glass-defs" aria-hidden="true">
+        <defs>
+            <filter id="glass-ripple" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+                <feTurbulence type="fractalNoise" baseFrequency="0.016 0.034" numOctaves="1" seed="11"
+                    result="noise" />
+                <feGaussianBlur in="noise" stdDeviation="1.4" result="blurredNoise" />
+                <feDisplacementMap in="SourceGraphic" in2="blurredNoise" scale="8" xChannelSelector="R"
+                    yChannelSelector="B" />
+            </filter>
+        </defs>
+    </svg>
+
+    <script src="js/search-v2.js"></script>
+</body>
+
+</html>

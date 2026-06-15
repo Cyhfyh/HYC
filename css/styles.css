@@ -1068,3 +1068,73 @@
             left: 40vw;
             top: 60vh;
         }
+
+        .page-switch.liquid-switch {
+            position: fixed;
+            left: 22px;
+            bottom: 22px;
+            z-index: 12000;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 44px;
+            padding: 0 18px;
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            border-radius: 999px;
+            color: var(--text-color);
+            text-decoration: none;
+            background: rgba(var(--surface-rgb), 0.32);
+            box-shadow:
+                0 10px 28px rgba(0, 0, 0, 0.18),
+                inset 2px 2px 0.5px -2px rgba(255, 255, 255, 0.9),
+                inset -2px -2px 0.5px -2px rgba(255, 255, 255, 0.7),
+                inset 0 0 18px rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(18px) saturate(170%);
+            -webkit-backdrop-filter: blur(18px) saturate(170%);
+            overflow: hidden;
+            transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+        }
+
+        .page-switch.liquid-switch::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 22% 16%, rgba(255, 255, 255, 0.46), transparent 24%),
+                linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent 46%, rgba(255, 255, 255, 0.12));
+            opacity: 0.72;
+            pointer-events: none;
+        }
+
+        .page-switch.liquid-switch i,
+        .page-switch.liquid-switch span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .page-switch.liquid-switch:hover,
+        .page-switch.liquid-switch:focus-visible {
+            transform: translateY(-2px) scale(1.02);
+            border-color: var(--primary-color);
+            box-shadow:
+                0 14px 34px rgba(0, 0, 0, 0.24),
+                0 0 18px var(--primary-color),
+                inset 2px 2px 0.5px -2px rgba(255, 255, 255, 0.95),
+                inset -2px -2px 0.5px -2px rgba(255, 255, 255, 0.74),
+                inset 0 0 22px rgba(255, 255, 255, 0.11);
+            outline: none;
+        }
+
+        .page-switch.liquid-switch:active {
+            transform: translateY(1px) scale(0.99);
+        }
+
+        @media (max-width: 600px) {
+            .page-switch.liquid-switch {
+                left: 14px;
+                bottom: 14px;
+                min-height: 42px;
+                padding: 0 16px;
+            }
+        }
