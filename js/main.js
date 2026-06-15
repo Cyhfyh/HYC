@@ -807,16 +807,16 @@
             const normalizedHue = ((Math.round(Number(hue)) % 360) + 360) % 360;
             const saturation = 52;
             const bgLightness = clamp(Number(lightness ?? getCurrentLightness()), 8, 96);
-            const useDark = bgLightness < 45;
+            const useDark = bgLightness < 40;
 
             const bgRgb = useDark
                 ? hslToRgb(normalizedHue, 32, bgLightness)
                 : hslToRgb(normalizedHue, 36, bgLightness);
             const surfaceRgb = useDark
-                ? hslToRgb(normalizedHue, 28, clamp(bgLightness + 8, 14, 34))
+                ? hslToRgb(normalizedHue, 28, clamp(bgLightness - 16, 14, 30))
                 : hslToRgb(normalizedHue, 26, clamp(bgLightness + 5, 86, 99));
             const borderRgb = useDark
-                ? hslToRgb(normalizedHue, 24, clamp(bgLightness + 18, 24, 48))
+                ? hslToRgb(normalizedHue, 24, clamp(bgLightness - 4, 24, 42))
                 : hslToRgb(normalizedHue, 22, clamp(bgLightness - 16, 58, 84));
             const primaryRgb = hslToRgb(
                 normalizedHue,
@@ -830,7 +830,7 @@
             setThemeVariable('--bg-color', rgbToHex(bgRgb));
             setThemeVariable('--container-bg', rgbToHex(surfaceRgb));
             setThemeVariable('--surface-rgb', `${Math.round(surfaceRgb.r)}, ${Math.round(surfaceRgb.g)}, ${Math.round(surfaceRgb.b)}`);
-            setThemeVariable('--text-color', getReadableTextColor(bgRgb, preferredTextRgb));
+            setThemeVariable('--text-color', getReadableTextColor(surfaceRgb, preferredTextRgb));
             setThemeVariable('--border-color', rgbToHex(borderRgb));
             setThemeVariable('--primary-color', rgbToHex(primaryRgb));
             setThemeVariable('--hover-color', rgbToHex(primaryRgb));

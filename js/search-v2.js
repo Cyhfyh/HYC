@@ -58,7 +58,8 @@
         dateVisible: 'hycSearchV2DateVisible',
         dateFormat: 'hycSearchV2DateFormat',
         background: 'hycSearchV2Background',
-        shortcuts: 'hycSearchV2Shortcuts'
+        shortcuts: 'hycSearchV2Shortcuts',
+        pageVersion: 'hycSearchPageVersion'
     };
 
     const canvas = document.getElementById('shaderCanvas');
@@ -110,6 +111,16 @@
     let placeholderDeleting = true;
     let tiltFrame = 0;
     let lastMouseEvent = null;
+    const waveSurfaceSelector = [
+        '.search-form',
+        '.liquid-button',
+        '.settings-menu',
+        '.shortcut-inline-editor',
+        '.suggestions-container',
+        '.icon-bag',
+        '.settings-item:not(.range-setting)',
+        '.icon-picker-trigger'
+    ].join(', ');
 
     function initShader() {
         const gl = canvas.getContext('webgl', { antialias: false, alpha: false });
@@ -224,12 +235,155 @@
         const dpr = Math.min(window.devicePixelRatio || 1, 2);
         const width = Math.floor(canvas.clientWidth * dpr);
         const height = Math.floor(canvas.clientHeight * dpr);
+        let resized = false;
 
         if (canvas.width !== width || canvas.height !== height) {
             canvas.width = width;
             canvas.height = height;
             gl.viewport(0, 0, width, height);
+            resized = true;
         }
+
+        if (resized) {
+            updateSearchFormHighlights();
+        }
+    }
+
+    function normalizedWavePointToViewport(point, viewportWidth, viewportHeight) {
+        const minSide = Math.min(viewportWidth, viewportHeight);
+        return {
+            x: (point.x * minSide + viewportWidth) / 2,
+            y: (point.y * minSide + viewportHeight) / 2
+        };
+    }
+
+    function getWaveExtrema(kind, time, viewportWidth, viewportHeight, fadeMargin) {
+        const phaseOffset = kind === 'peak' ? Math.PI / 2 : Math.PI * 1.5;
+        const cycle = Math.PI * 2;
+        const xScale = Math.max(0.0001, backgroundSettings.xScale || DEFAULT_BACKGROUND.xScale);
+        const yScale = backgroundSettings.yScale || DEFAULT_BACKGROUND.yScale;
+        const minSide = Math.min(viewportWidth, viewportHeight);
+        const minNormX = ((-fadeMargin * 2) - viewportWidth) / minSide;
+        const maxNormX = (((viewportWidth + fadeMargin * 2) * 2) - viewportWidth) / minSide;
+        const startIndex = Math.floor((((minNormX + time) * xScale) - phaseOffset) / cycle) - 1;
+        const endIndex = Math.ceil((((maxNormX + time) * xScale) - phaseOffset) / cycle) + 1;
+        const points = [];
+
+        for (let index = startIndex; index <= endIndex; index += 1) {
+            points.push({
+                x: (phaseOffset + index * cycle) / xScale - time,
+                y: kind === 'peak' ? -yScale : yScale
+            });
+        }
+
+        return points;
+    }
+
+    function smoothstep(edge0, edge1, value) {
+        if (edge0 === edge1) {
+            return value < edge0 ? 0 : 1;
+        }
+
+        const t = clamp((value - edge0) / (edge1 - edge0), 0, 1);
+        return t * t * (3 - 2 * t);
+    }
+
+    function computeWaveVisibility(point, viewportWidth, viewportHeight) {
+        const fadeMargin = Math.max(110, Math.min(viewportWidth, viewportHeight) * 0.18);
+        const innerFade = fadeMargin * 1.25;
+        const outerFade = fadeMargin * 0.25;
+        const left = smoothstep(-outerFade, innerFade, point.x);
+        const right = 1 - smoothstep(viewportWidth - innerFade, viewportWidth + outerFade, point.x);
+        const top = smoothstep(-outerFade, innerFade, point.y);
+        const bottom = 1 - smoothstep(viewportHeight - innerFade, viewportHeight + outerFade, point.y);
+        return clamp(left * right * top * bottom, 0, 1);
+    }
+
+    function projectGlintPoint(point, rect, viewportWidth, viewportHeight) {
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        const influenceX = Math.max(rect.width * 0.9, viewportWidth * 0.22);
+        const influenceY = Math.max(rect.height * 1.8, viewportHeight * 0.24);
+        const offsetX = clamp((point.x - centerX) / influenceX, -1, 1);
+        const offsetY = clamp((point.y - centerY) / influenceY, -1, 1);
+        const xPadding = Math.max(12, rect.width * 0.05);
+        const yPadding = Math.max(7, rect.height * 0.14);
+
+        return {
+            x: clamp(rect.width / 2 + offsetX * (rect.width / 2 - xPadding), xPadding, rect.width - xPadding),
+            y: clamp(rect.height / 2 + offsetY * (rect.height / 2 - yPadding), yPadding, rect.height - yPadding)
+        };
+    }
+
+    function getWeightedGlint(kind, rect, now, viewportWidth, viewportHeight) {
+        const fadeMargin = Math.max(110, Math.min(viewportWidth, viewportHeight) * 0.18);
+        const time = now * 0.001 * backgroundSettings.speed;
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        const extrema = getWaveExtrema(kind, time, viewportWidth, viewportHeight, fadeMargin);
+        let totalWeight = 0;
+        let weightedX = 0;
+        let weightedY = 0;
+
+        extrema.forEach((extremum) => {
+            const point = normalizedWavePointToViewport(extremum, viewportWidth, viewportHeight);
+            const visibility = computeWaveVisibility(point, viewportWidth, viewportHeight);
+            if (visibility <= 0.001) return;
+
+            const distanceX = Math.abs(point.x - centerX) / Math.max(viewportWidth * 0.48, rect.width);
+            const distanceY = Math.abs(point.y - centerY) / Math.max(viewportHeight * 0.42, rect.height * 4);
+            const proximity = Math.max(0.12, 1 - clamp(distanceX * 0.65 + distanceY * 0.35, 0, 1));
+            const weight = visibility * proximity;
+            const spot = projectGlintPoint(point, rect, viewportWidth, viewportHeight);
+
+            totalWeight += weight;
+            weightedX += spot.x * weight;
+            weightedY += spot.y * weight;
+        });
+
+        if (totalWeight <= 0.001) {
+            return {
+                x: rect.width / 2,
+                y: rect.height / 2,
+                glow: 0
+            };
+        }
+
+        return {
+            x: weightedX / totalWeight,
+            y: weightedY / totalWeight,
+            glow: clamp(totalWeight, 0, 1)
+        };
+    }
+
+    function updateWaveSurface(surface, now, viewportWidth, viewportHeight) {
+        const rect = surface.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+
+        const peakSpot = getWeightedGlint('peak', rect, now, viewportWidth, viewportHeight);
+        const troughSpot = getWeightedGlint('trough', rect, now, viewportWidth, viewportHeight);
+        const waveGlow = clamp(0.1 + (peakSpot.glow + troughSpot.glow) * 0.48, 0, 1);
+
+        surface.style.setProperty('--shine-peak-x', `${peakSpot.x.toFixed(2)}px`);
+        surface.style.setProperty('--shine-peak-y', `${peakSpot.y.toFixed(2)}px`);
+        surface.style.setProperty('--shine-trough-x', `${troughSpot.x.toFixed(2)}px`);
+        surface.style.setProperty('--shine-trough-y', `${troughSpot.y.toFixed(2)}px`);
+        surface.style.setProperty('--shine-peak-glow', peakSpot.glow.toFixed(3));
+        surface.style.setProperty('--shine-trough-glow', troughSpot.glow.toFixed(3));
+        surface.style.setProperty('--wave-glow', waveGlow.toFixed(3));
+    }
+
+    function updateSearchFormHighlights(now = performance.now()) {
+        if (!searchForm) return;
+
+        const viewportWidth = canvas.clientWidth || window.innerWidth;
+        const viewportHeight = canvas.clientHeight || window.innerHeight;
+        const minSide = Math.min(viewportWidth, viewportHeight);
+        if (!viewportWidth || !viewportHeight || !minSide) return;
+
+        document.querySelectorAll(waveSurfaceSelector).forEach((surface) => {
+            updateWaveSurface(surface, now, viewportWidth, viewportHeight);
+        });
     }
 
     function renderShader(now) {
@@ -252,6 +406,7 @@
         gl.uniform1f(uniforms.glow, settings.glow);
         gl.uniform1f(uniforms.darkness, settings.darkness);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
+        updateSearchFormHighlights(now);
 
         if (!prefersReducedMotion.matches) {
             requestAnimationFrame(renderShader);
@@ -289,6 +444,7 @@
         backgroundSettings = { ...DEFAULT_BACKGROUND };
         syncBackgroundInputs();
         persistBackgroundSettings();
+        updateSearchFormHighlights();
     }
 
     function setDefaultSearchEngine(engine, animate = false) {
@@ -737,6 +893,7 @@
 
         document.addEventListener('mouseleave', () => {
             searchForm.style.transform = 'rotateX(0deg) rotateY(0deg)';
+            updateSearchFormHighlights();
         });
     }
 
@@ -749,6 +906,7 @@
         const rotateX = clamp(-((lastMouseEvent.clientY - centerY) / (window.innerHeight / 2)) * 7, -7, 7);
         const rotateY = clamp(((lastMouseEvent.clientX - centerX) / (window.innerWidth / 2)) * 10, -10, 10);
         searchForm.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        updateSearchFormHighlights();
         tiltFrame = 0;
     }
 
@@ -793,6 +951,7 @@
         backgroundInputs[key].addEventListener('input', (event) => {
             backgroundSettings[key] = Number(event.target.value);
             persistBackgroundSettings();
+            updateSearchFormHighlights();
         });
     });
 
@@ -907,6 +1066,7 @@
     });
 
     syncBackgroundInputs();
+    localStorage.setItem(STORAGE.pageVersion, 'v2');
     setDefaultSearchEngine(currentEngine);
     renderShortcuts();
     updateDateInfo();
@@ -915,4 +1075,5 @@
     renderIconOptions();
     initShader();
     initSearchTilt();
+    updateSearchFormHighlights();
 }());
