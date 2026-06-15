@@ -18,12 +18,12 @@
     };
 
     const DEFAULT_BACKGROUND = {
-        bandSize: 0.05,
-        xScale: 1.08,
-        yScale: 0.46,
-        distortion: 0.055,
-        speed: 0.34,
-        glow: 0.92,
+        bandSize: 0.024,
+        xScale: 1.15,
+        yScale: 0.51,
+        distortion: 0.024,
+        speed: 0.6,
+        glow: 0.51,
         darkness: 0.02
     };
 
