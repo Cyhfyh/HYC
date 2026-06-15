@@ -18,14 +18,17 @@
     };
 
     const DEFAULT_BACKGROUND = {
-        bandSize: 0.024,
-        xScale: 1.15,
-        yScale: 0.51,
-        distortion: 0.024,
-        speed: 0.6,
-        glow: 0.51,
-        darkness: 0.02
+        type: 'ring',
+        bandSize: 0.026,
+        xScale: 0.75,
+        yScale: 0.5,
+        distortion: 0.026,
+        speed: 0.17,
+        glow: 1.14,
+        darkness: 0
     };
+    const DEFAULT_RING_BACKGROUND = { ...DEFAULT_BACKGROUND };
+    const BACKGROUND_TYPES = ['wave', 'ring'];
 
     const DEFAULT_SHORTCUTS = [
         { title: '百度地图', url: 'https://map.baidu.com', icon: 'fas fa-map' },
@@ -81,6 +84,8 @@
     const shortcutIconPreview = document.getElementById('shortcutIconPreview');
     const shortcutIconLabel = document.getElementById('shortcutIconLabel');
     const shortcutEditorTitle = document.getElementById('shortcutEditorTitle');
+    const toggleBandTypeButton = document.getElementById('toggleBandTypeBtn');
+    const bandTypeLabel = document.getElementById('bandTypeLabel');
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
     const backgroundInputs = {
@@ -148,20 +153,39 @@
             uniform float bandSize;
             uniform float glow;
             uniform float darkness;
+            uniform float bandType;
 
-            void main() {
-                vec2 p = (gl_FragCoord.xy * 2.0 - resolution) / min(resolution.x, resolution.y);
+            vec3 renderWave(vec2 p) {
                 float d = length(p) * distortion;
 
                 float rx = p.x * (1.0 + d);
                 float gx = p.x;
                 float bx = p.x * (1.0 - d);
 
-                float r = bandSize / abs(p.y + sin((rx + time) * xScale) * yScale);
-                float g = bandSize / abs(p.y + sin((gx + time) * xScale) * yScale);
-                float b = bandSize / abs(p.y + sin((bx + time) * xScale) * yScale);
+                float r = bandSize / max(abs(p.y + sin((rx + time) * xScale) * yScale), 0.002);
+                float g = bandSize / max(abs(p.y + sin((gx + time) * xScale) * yScale), 0.002);
+                float b = bandSize / max(abs(p.y + sin((bx + time) * xScale) * yScale), 0.002);
 
-                vec3 color = vec3(r, g, b) * glow;
+                return vec3(r, g, b);
+            }
+
+            vec3 renderRing(vec2 p) {
+                float orbitTime = time * 0.72;
+                vec2 center = vec2(cos(orbitTime) * 2.25, sin(orbitTime) * 1.55);
+                float radius = 2.95 + sin(time * 0.37) * 0.2;
+                float width = max(bandSize * 1.15, 0.006);
+                float chroma = distortion * 0.42;
+
+                float r = width / max(abs(length(p - center * (1.0 + chroma)) - radius), 0.003);
+                float g = width / max(abs(length(p - center) - radius), 0.003);
+                float b = width / max(abs(length(p - center * (1.0 - chroma)) - radius), 0.003);
+
+                return vec3(r, g, b);
+            }
+
+            void main() {
+                vec2 p = (gl_FragCoord.xy * 2.0 - resolution) / min(resolution.x, resolution.y);
+                vec3 color = (bandType < 0.5 ? renderWave(p) : renderRing(p)) * glow;
                 float vignette = 1.0 - smoothstep(0.68, 1.9, length(p)) * 0.38;
                 color *= vignette;
                 color += vec3(darkness * 0.28, darkness * 0.36, darkness * 0.5);
@@ -207,7 +231,8 @@
                 distortion: gl.getUniformLocation(program, 'distortion'),
                 bandSize: gl.getUniformLocation(program, 'bandSize'),
                 glow: gl.getUniformLocation(program, 'glow'),
-                darkness: gl.getUniformLocation(program, 'darkness')
+                darkness: gl.getUniformLocation(program, 'darkness'),
+                bandType: gl.getUniformLocation(program, 'bandType')
             }
         };
 
@@ -254,6 +279,22 @@
         return {
             x: (point.x * minSide + viewportWidth) / 2,
             y: (point.y * minSide + viewportHeight) / 2
+        };
+    }
+
+    function normalizedShaderPointToViewport(point, viewportWidth, viewportHeight) {
+        const minSide = Math.min(viewportWidth, viewportHeight);
+        return {
+            x: (point.x * minSide + viewportWidth) / 2,
+            y: (viewportHeight - point.y * minSide) / 2
+        };
+    }
+
+    function viewportPointToNormalizedShader(point, viewportWidth, viewportHeight) {
+        const minSide = Math.min(viewportWidth, viewportHeight);
+        return {
+            x: (point.x * 2 - viewportWidth) / minSide,
+            y: (viewportHeight - point.y * 2) / minSide
         };
     }
 
@@ -356,9 +397,65 @@
         };
     }
 
+    function getRingCenter(time) {
+        const orbitTime = time * 0.72;
+        return {
+            x: Math.cos(orbitTime) * 2.25,
+            y: Math.sin(orbitTime) * 1.55
+        };
+    }
+
+    function getRingRadius(time) {
+        return 2.95 + Math.sin(time * 0.37) * 0.2;
+    }
+
+    function getRingGlint(rect, now, viewportWidth, viewportHeight) {
+        const time = now * 0.001 * backgroundSettings.speed;
+        const centerPoint = {
+            x: rect.left + rect.width / 2,
+            y: rect.top + rect.height / 2
+        };
+        const controlPoint = viewportPointToNormalizedShader(centerPoint, viewportWidth, viewportHeight);
+        const ringCenter = getRingCenter(time);
+        const radius = getRingRadius(time);
+        const dx = controlPoint.x - ringCenter.x;
+        const dy = controlPoint.y - ringCenter.y;
+        const distance = Math.hypot(dx, dy) || 1;
+        const ringPoint = {
+            x: ringCenter.x + (dx / distance) * radius,
+            y: ringCenter.y + (dy / distance) * radius
+        };
+        const viewportPoint = normalizedShaderPointToViewport(ringPoint, viewportWidth, viewportHeight);
+        const visibility = computeWaveVisibility(viewportPoint, viewportWidth, viewportHeight);
+        const distanceX = Math.abs(viewportPoint.x - centerPoint.x) / Math.max(viewportWidth * 0.5, rect.width);
+        const distanceY = Math.abs(viewportPoint.y - centerPoint.y) / Math.max(viewportHeight * 0.5, rect.height * 4);
+        const proximity = Math.max(0.14, 1 - clamp(distanceX * 0.58 + distanceY * 0.42, 0, 1));
+        const spot = projectGlintPoint(viewportPoint, rect, viewportWidth, viewportHeight);
+
+        return {
+            x: spot.x,
+            y: spot.y,
+            glow: clamp(visibility * proximity, 0, 1)
+        };
+    }
+
     function updateWaveSurface(surface, now, viewportWidth, viewportHeight) {
         const rect = surface.getBoundingClientRect();
         if (!rect.width || !rect.height) return;
+
+        if (backgroundSettings.type === 'ring') {
+            const ringSpot = getRingGlint(rect, now, viewportWidth, viewportHeight);
+            const waveGlow = clamp(0.08 + ringSpot.glow * 0.86, 0, 1);
+
+            surface.style.setProperty('--shine-peak-x', `${ringSpot.x.toFixed(2)}px`);
+            surface.style.setProperty('--shine-peak-y', `${ringSpot.y.toFixed(2)}px`);
+            surface.style.setProperty('--shine-trough-x', `${ringSpot.x.toFixed(2)}px`);
+            surface.style.setProperty('--shine-trough-y', `${ringSpot.y.toFixed(2)}px`);
+            surface.style.setProperty('--shine-peak-glow', ringSpot.glow.toFixed(3));
+            surface.style.setProperty('--shine-trough-glow', '0.000');
+            surface.style.setProperty('--wave-glow', waveGlow.toFixed(3));
+            return;
+        }
 
         const peakSpot = getWeightedGlint('peak', rect, now, viewportWidth, viewportHeight);
         const troughSpot = getWeightedGlint('trough', rect, now, viewportWidth, viewportHeight);
@@ -405,6 +502,7 @@
         gl.uniform1f(uniforms.bandSize, settings.bandSize);
         gl.uniform1f(uniforms.glow, settings.glow);
         gl.uniform1f(uniforms.darkness, settings.darkness);
+        gl.uniform1f(uniforms.bandType, settings.type === 'ring' ? 1 : 0);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
         updateSearchFormHighlights(now);
 
@@ -424,6 +522,11 @@
 
     function normalizeBackgroundSettings(settings) {
         return Object.keys(DEFAULT_BACKGROUND).reduce((result, key) => {
+            if (key === 'type') {
+                result.type = BACKGROUND_TYPES.includes(settings.type) ? settings.type : DEFAULT_BACKGROUND.type;
+                return result;
+            }
+
             const value = Number(settings[key]);
             result[key] = Number.isFinite(value) ? value : DEFAULT_BACKGROUND[key];
             return result;
@@ -434,6 +537,17 @@
         Object.keys(backgroundInputs).forEach((key) => {
             backgroundInputs[key].value = String(backgroundSettings[key]);
         });
+        syncBackgroundTypeButton();
+    }
+
+    function syncBackgroundTypeButton() {
+        if (!toggleBandTypeButton || !bandTypeLabel) return;
+
+        const isRing = backgroundSettings.type === 'ring';
+        const label = '\u8272\u5e26\u7c7b\u578b\uff1a' + (isRing ? '\u73af\u5f62' : '\u6ce2\u6d6a');
+        bandTypeLabel.textContent = label;
+        toggleBandTypeButton.setAttribute('aria-label', label);
+        toggleBandTypeButton.title = label;
     }
 
     function persistBackgroundSettings() {
@@ -443,6 +557,19 @@
     function resetBackgroundSettings() {
         backgroundSettings = { ...DEFAULT_BACKGROUND };
         syncBackgroundInputs();
+        persistBackgroundSettings();
+        updateSearchFormHighlights();
+    }
+
+    function toggleBackgroundType() {
+        if (backgroundSettings.type === 'ring') {
+            backgroundSettings.type = 'wave';
+        } else {
+            backgroundSettings = { ...DEFAULT_RING_BACKGROUND };
+            syncBackgroundInputs();
+        }
+
+        syncBackgroundTypeButton();
         persistBackgroundSettings();
         updateSearchFormHighlights();
     }
@@ -944,6 +1071,7 @@
     document.getElementById('toggleEngineBtn').addEventListener('click', toggleSearchEngine);
     document.getElementById('editShortcutsBtn').addEventListener('click', openShortcutEditor);
     document.getElementById('finishShortcutEditBtn').addEventListener('click', exitShortcutEditMode);
+    toggleBandTypeButton.addEventListener('click', toggleBackgroundType);
     document.getElementById('resetBackgroundBtn').addEventListener('click', resetBackgroundSettings);
     searchLogo.addEventListener('click', toggleSearchEngine);
 
