@@ -17,19 +17,7 @@
         }
     };
 
-    const DEFAULT_BACKGROUND = {
-        type: 'ring',
-        bandSize: 0.026,
-        xScale: 0.75,
-        yScale: 0.5,
-        distortion: 0.026,
-        speed: 0.17,
-        glow: 1.14,
-        darkness: 0
-    };
-    const DEFAULT_RING_BACKGROUND = { ...DEFAULT_BACKGROUND };
-    const BACKGROUND_TYPES = ['wave', 'ring'];
-    const BACKGROUND_PRESET_VERSION = 'ring-default-20260615';
+    const BACKGROUND_MODES = window.ReactBitsBackgrounds.modes;
 
     const DEFAULT_SHORTCUTS = [
         { title: '百度地图', url: 'https://map.baidu.com', icon: 'fas fa-map' },
@@ -61,13 +49,12 @@
         engine: 'hycSearchV2Engine',
         dateVisible: 'hycSearchV2DateVisible',
         dateFormat: 'hycSearchV2DateFormat',
-        background: 'hycSearchV2Background',
-        backgroundPresetVersion: 'hycSearchV2BackgroundPresetVersion',
+        backgroundMode: 'hycSearchV2BackgroundMode',
         shortcuts: 'hycSearchV2Shortcuts',
         pageVersion: 'hycSearchPageVersion'
     };
 
-    const canvas = document.getElementById('shaderCanvas');
+    const backgroundRoot = document.getElementById('reactBitsBackgroundRoot');
     const searchInput = document.getElementById('searchInput');
     const searchLogo = document.getElementById('searchLogo');
     const searchForm = document.getElementById('searchForm');
@@ -86,19 +73,11 @@
     const shortcutIconPreview = document.getElementById('shortcutIconPreview');
     const shortcutIconLabel = document.getElementById('shortcutIconLabel');
     const shortcutEditorTitle = document.getElementById('shortcutEditorTitle');
-    const toggleBandTypeButton = document.getElementById('toggleBandTypeBtn');
-    const bandTypeLabel = document.getElementById('bandTypeLabel');
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-
-    const backgroundInputs = {
-        bandSize: document.getElementById('bandSizePicker'),
-        xScale: document.getElementById('xScalePicker'),
-        yScale: document.getElementById('yScalePicker'),
-        distortion: document.getElementById('distortionPicker'),
-        speed: document.getElementById('speedPicker'),
-        glow: document.getElementById('glowPicker'),
-        darkness: document.getElementById('darknessPicker')
-    };
+    const toggleBackgroundButton = document.getElementById('toggleBackgroundBtn');
+    const backgroundLabel = document.getElementById('backgroundLabel');
+    const backgroundPicker = document.getElementById('backgroundPicker');
+    const backgroundOptions = document.getElementById('backgroundOptions');
+    const closeBackgroundPickerButton = document.getElementById('closeBackgroundPickerBtn');
 
     let currentEngine = localStorage.getItem(STORAGE.engine) || 'Baidu';
     let dateFormatIndex = Number(localStorage.getItem(STORAGE.dateFormat) || '0');
@@ -106,8 +85,8 @@
     let suggestionTimer = 0;
     let pendingSuggestionScript = null;
     let pendingCallbackName = null;
-    let backgroundSettings = readBackgroundSettings();
-    let shaderRefs = null;
+    let backgroundMode = readBackgroundMode();
+    let backgroundRenderer = null;
     let shortcutEditMode = false;
     let shortcutEditList = [];
     let selectedShortcutIndex = -1;
@@ -118,477 +97,64 @@
     let placeholderDeleting = true;
     let tiltFrame = 0;
     let lastMouseEvent = null;
-    const waveSurfaceSelector = [
-        '.search-form',
-        '.liquid-button',
-        '.settings-menu',
-        '.shortcut-inline-editor',
-        '.suggestions-container',
-        '.icon-bag',
-        '.settings-item:not(.range-setting)',
-        '.icon-picker-trigger'
-    ].join(', ');
-
     function initShader() {
-        const gl = canvas.getContext('webgl', { antialias: false, alpha: false });
-        if (!gl) {
-            canvas.classList.add('webgl-fallback');
-            return;
-        }
-
-        const vertexShaderSource = `
-            attribute vec2 position;
-
-            void main() {
-                gl_Position = vec4(position, 0.0, 1.0);
-            }
-        `;
-
-        const fragmentShaderSource = `
-            precision highp float;
-
-            uniform vec2 resolution;
-            uniform float time;
-            uniform float xScale;
-            uniform float yScale;
-            uniform float distortion;
-            uniform float bandSize;
-            uniform float glow;
-            uniform float darkness;
-            uniform float bandType;
-
-            vec3 renderWave(vec2 p) {
-                float d = length(p) * distortion;
-
-                float rx = p.x * (1.0 + d);
-                float gx = p.x;
-                float bx = p.x * (1.0 - d);
-
-                float r = bandSize / max(abs(p.y + sin((rx + time) * xScale) * yScale), 0.002);
-                float g = bandSize / max(abs(p.y + sin((gx + time) * xScale) * yScale), 0.002);
-                float b = bandSize / max(abs(p.y + sin((bx + time) * xScale) * yScale), 0.002);
-
-                return vec3(r, g, b);
-            }
-
-            vec3 renderRing(vec2 p) {
-                float orbitTime = time * 0.72;
-                vec2 center = vec2(cos(orbitTime) * 2.25, sin(orbitTime) * 1.55);
-                float radius = 2.95 + sin(time * 0.37) * 0.2;
-                float width = max(bandSize * 1.15, 0.006);
-                float chroma = distortion * 0.42;
-
-                float r = width / max(abs(length(p - center * (1.0 + chroma)) - radius), 0.003);
-                float g = width / max(abs(length(p - center) - radius), 0.003);
-                float b = width / max(abs(length(p - center * (1.0 - chroma)) - radius), 0.003);
-
-                return vec3(r, g, b);
-            }
-
-            void main() {
-                vec2 p = (gl_FragCoord.xy * 2.0 - resolution) / min(resolution.x, resolution.y);
-                vec3 color = (bandType < 0.5 ? renderWave(p) : renderRing(p)) * glow;
-                float vignette = 1.0 - smoothstep(0.68, 1.9, length(p)) * 0.38;
-                color *= vignette;
-                color += vec3(darkness * 0.28, darkness * 0.36, darkness * 0.5);
-                gl_FragColor = vec4(color, 1.0);
-            }
-        `;
-
-        const vertexShader = compileShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
-        const fragmentShader = compileShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
-        if (!vertexShader || !fragmentShader) {
-            canvas.classList.add('webgl-fallback');
-            return;
-        }
-
-        const program = gl.createProgram();
-        gl.attachShader(program, vertexShader);
-        gl.attachShader(program, fragmentShader);
-        gl.linkProgram(program);
-
-        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-            canvas.classList.add('webgl-fallback');
-            return;
-        }
-
-        const positionBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-        gl.bufferData(
-            gl.ARRAY_BUFFER,
-            new Float32Array([-1, -1, 1, -1, -1, 1, 1, -1, -1, 1, 1, 1]),
-            gl.STATIC_DRAW
-        );
-
-        shaderRefs = {
-            gl,
-            program,
-            positionBuffer,
-            positionLocation: gl.getAttribLocation(program, 'position'),
-            uniforms: {
-                resolution: gl.getUniformLocation(program, 'resolution'),
-                time: gl.getUniformLocation(program, 'time'),
-                xScale: gl.getUniformLocation(program, 'xScale'),
-                yScale: gl.getUniformLocation(program, 'yScale'),
-                distortion: gl.getUniformLocation(program, 'distortion'),
-                bandSize: gl.getUniformLocation(program, 'bandSize'),
-                glow: gl.getUniformLocation(program, 'glow'),
-                darkness: gl.getUniformLocation(program, 'darkness'),
-                bandType: gl.getUniformLocation(program, 'bandType')
-            }
-        };
-
-        window.addEventListener('resize', resizeShader);
-        requestAnimationFrame(renderShader);
+        backgroundRenderer = window.ReactBitsBackgrounds.create(backgroundRoot, backgroundMode);
     }
 
-    function compileShader(gl, type, source) {
-        const shader = gl.createShader(type);
-        gl.shaderSource(shader, source);
-        gl.compileShader(shader);
-
-        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-            gl.deleteShader(shader);
-            return null;
-        }
-
-        return shader;
+    function readBackgroundMode() {
+        const stored = localStorage.getItem(STORAGE.backgroundMode);
+        return BACKGROUND_MODES.some((item) => item.id === stored) ? stored : 'color-bends';
     }
 
-    function resizeShader() {
-        if (!shaderRefs) return;
-
-        const gl = shaderRefs.gl;
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
-        const width = Math.floor(canvas.clientWidth * dpr);
-        const height = Math.floor(canvas.clientHeight * dpr);
-        let resized = false;
-
-        if (canvas.width !== width || canvas.height !== height) {
-            canvas.width = width;
-            canvas.height = height;
-            gl.viewport(0, 0, width, height);
-            resized = true;
-        }
-
-        if (resized) {
-            updateSearchFormHighlights();
-        }
-    }
-
-    function normalizedWavePointToViewport(point, viewportWidth, viewportHeight) {
-        const minSide = Math.min(viewportWidth, viewportHeight);
-        return {
-            x: (point.x * minSide + viewportWidth) / 2,
-            y: (point.y * minSide + viewportHeight) / 2
-        };
-    }
-
-    function normalizedShaderPointToViewport(point, viewportWidth, viewportHeight) {
-        const minSide = Math.min(viewportWidth, viewportHeight);
-        return {
-            x: (point.x * minSide + viewportWidth) / 2,
-            y: (viewportHeight - point.y * minSide) / 2
-        };
-    }
-
-    function viewportPointToNormalizedShader(point, viewportWidth, viewportHeight) {
-        const minSide = Math.min(viewportWidth, viewportHeight);
-        return {
-            x: (point.x * 2 - viewportWidth) / minSide,
-            y: (viewportHeight - point.y * 2) / minSide
-        };
-    }
-
-    function getWaveExtrema(kind, time, viewportWidth, viewportHeight, fadeMargin) {
-        const phaseOffset = kind === 'peak' ? Math.PI / 2 : Math.PI * 1.5;
-        const cycle = Math.PI * 2;
-        const xScale = Math.max(0.0001, backgroundSettings.xScale || DEFAULT_BACKGROUND.xScale);
-        const yScale = backgroundSettings.yScale || DEFAULT_BACKGROUND.yScale;
-        const minSide = Math.min(viewportWidth, viewportHeight);
-        const minNormX = ((-fadeMargin * 2) - viewportWidth) / minSide;
-        const maxNormX = (((viewportWidth + fadeMargin * 2) * 2) - viewportWidth) / minSide;
-        const startIndex = Math.floor((((minNormX + time) * xScale) - phaseOffset) / cycle) - 1;
-        const endIndex = Math.ceil((((maxNormX + time) * xScale) - phaseOffset) / cycle) + 1;
-        const points = [];
-
-        for (let index = startIndex; index <= endIndex; index += 1) {
-            points.push({
-                x: (phaseOffset + index * cycle) / xScale - time,
-                y: kind === 'peak' ? -yScale : yScale
-            });
-        }
-
-        return points;
-    }
-
-    function smoothstep(edge0, edge1, value) {
-        if (edge0 === edge1) {
-            return value < edge0 ? 0 : 1;
-        }
-
-        const t = clamp((value - edge0) / (edge1 - edge0), 0, 1);
-        return t * t * (3 - 2 * t);
-    }
-
-    function computeWaveVisibility(point, viewportWidth, viewportHeight) {
-        const fadeMargin = Math.max(110, Math.min(viewportWidth, viewportHeight) * 0.18);
-        const innerFade = fadeMargin * 1.25;
-        const outerFade = fadeMargin * 0.25;
-        const left = smoothstep(-outerFade, innerFade, point.x);
-        const right = 1 - smoothstep(viewportWidth - innerFade, viewportWidth + outerFade, point.x);
-        const top = smoothstep(-outerFade, innerFade, point.y);
-        const bottom = 1 - smoothstep(viewportHeight - innerFade, viewportHeight + outerFade, point.y);
-        return clamp(left * right * top * bottom, 0, 1);
-    }
-
-    function projectGlintPoint(point, rect, viewportWidth, viewportHeight) {
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        const influenceX = Math.max(rect.width * 0.9, viewportWidth * 0.22);
-        const influenceY = Math.max(rect.height * 1.8, viewportHeight * 0.24);
-        const offsetX = clamp((point.x - centerX) / influenceX, -1, 1);
-        const offsetY = clamp((point.y - centerY) / influenceY, -1, 1);
-        const xPadding = Math.max(12, rect.width * 0.05);
-        const yPadding = Math.max(7, rect.height * 0.14);
-
-        return {
-            x: clamp(rect.width / 2 + offsetX * (rect.width / 2 - xPadding), xPadding, rect.width - xPadding),
-            y: clamp(rect.height / 2 + offsetY * (rect.height / 2 - yPadding), yPadding, rect.height - yPadding)
-        };
-    }
-
-    function getWeightedGlint(kind, rect, now, viewportWidth, viewportHeight) {
-        const fadeMargin = Math.max(110, Math.min(viewportWidth, viewportHeight) * 0.18);
-        const time = now * 0.001 * backgroundSettings.speed;
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        const extrema = getWaveExtrema(kind, time, viewportWidth, viewportHeight, fadeMargin);
-        let totalWeight = 0;
-        let weightedX = 0;
-        let weightedY = 0;
-
-        extrema.forEach((extremum) => {
-            const point = normalizedWavePointToViewport(extremum, viewportWidth, viewportHeight);
-            const visibility = computeWaveVisibility(point, viewportWidth, viewportHeight);
-            if (visibility <= 0.001) return;
-
-            const distanceX = Math.abs(point.x - centerX) / Math.max(viewportWidth * 0.48, rect.width);
-            const distanceY = Math.abs(point.y - centerY) / Math.max(viewportHeight * 0.42, rect.height * 4);
-            const proximity = Math.max(0.12, 1 - clamp(distanceX * 0.65 + distanceY * 0.35, 0, 1));
-            const weight = visibility * proximity;
-            const spot = projectGlintPoint(point, rect, viewportWidth, viewportHeight);
-
-            totalWeight += weight;
-            weightedX += spot.x * weight;
-            weightedY += spot.y * weight;
-        });
-
-        if (totalWeight <= 0.001) {
-            return {
-                x: rect.width / 2,
-                y: rect.height / 2,
-                glow: 0
-            };
-        }
-
-        return {
-            x: weightedX / totalWeight,
-            y: weightedY / totalWeight,
-            glow: clamp(totalWeight, 0, 1)
-        };
-    }
-
-    function getRingCenter(time) {
-        const orbitTime = time * 0.72;
-        return {
-            x: Math.cos(orbitTime) * 2.25,
-            y: Math.sin(orbitTime) * 1.55
-        };
-    }
-
-    function getRingRadius(time) {
-        return 2.95 + Math.sin(time * 0.37) * 0.2;
-    }
-
-    function getRingGlint(rect, now, viewportWidth, viewportHeight) {
-        const time = now * 0.001 * backgroundSettings.speed;
-        const centerPoint = {
-            x: rect.left + rect.width / 2,
-            y: rect.top + rect.height / 2
-        };
-        const controlPoint = viewportPointToNormalizedShader(centerPoint, viewportWidth, viewportHeight);
-        const ringCenter = getRingCenter(time);
-        const radius = getRingRadius(time);
-        const dx = controlPoint.x - ringCenter.x;
-        const dy = controlPoint.y - ringCenter.y;
-        const distance = Math.hypot(dx, dy) || 1;
-        const ringPoint = {
-            x: ringCenter.x + (dx / distance) * radius,
-            y: ringCenter.y + (dy / distance) * radius
-        };
-        const viewportPoint = normalizedShaderPointToViewport(ringPoint, viewportWidth, viewportHeight);
-        const visibility = computeWaveVisibility(viewportPoint, viewportWidth, viewportHeight);
-        const distanceX = Math.abs(viewportPoint.x - centerPoint.x) / Math.max(viewportWidth * 0.5, rect.width);
-        const distanceY = Math.abs(viewportPoint.y - centerPoint.y) / Math.max(viewportHeight * 0.5, rect.height * 4);
-        const proximity = Math.max(0.14, 1 - clamp(distanceX * 0.58 + distanceY * 0.42, 0, 1));
-        const spot = projectGlintPoint(viewportPoint, rect, viewportWidth, viewportHeight);
-
-        return {
-            x: spot.x,
-            y: spot.y,
-            glow: clamp(visibility * proximity, 0, 1)
-        };
-    }
-
-    function updateWaveSurface(surface, now, viewportWidth, viewportHeight) {
-        const rect = surface.getBoundingClientRect();
-        if (!rect.width || !rect.height) return;
-
-        if (backgroundSettings.type === 'ring') {
-            const ringSpot = getRingGlint(rect, now, viewportWidth, viewportHeight);
-            const waveGlow = clamp(0.08 + ringSpot.glow * 0.86, 0, 1);
-
-            surface.style.setProperty('--shine-peak-x', `${ringSpot.x.toFixed(2)}px`);
-            surface.style.setProperty('--shine-peak-y', `${ringSpot.y.toFixed(2)}px`);
-            surface.style.setProperty('--shine-trough-x', `${ringSpot.x.toFixed(2)}px`);
-            surface.style.setProperty('--shine-trough-y', `${ringSpot.y.toFixed(2)}px`);
-            surface.style.setProperty('--shine-peak-glow', ringSpot.glow.toFixed(3));
-            surface.style.setProperty('--shine-trough-glow', '0.000');
-            surface.style.setProperty('--wave-glow', waveGlow.toFixed(3));
-            return;
-        }
-
-        const peakSpot = getWeightedGlint('peak', rect, now, viewportWidth, viewportHeight);
-        const troughSpot = getWeightedGlint('trough', rect, now, viewportWidth, viewportHeight);
-        const waveGlow = clamp(0.1 + (peakSpot.glow + troughSpot.glow) * 0.48, 0, 1);
-
-        surface.style.setProperty('--shine-peak-x', `${peakSpot.x.toFixed(2)}px`);
-        surface.style.setProperty('--shine-peak-y', `${peakSpot.y.toFixed(2)}px`);
-        surface.style.setProperty('--shine-trough-x', `${troughSpot.x.toFixed(2)}px`);
-        surface.style.setProperty('--shine-trough-y', `${troughSpot.y.toFixed(2)}px`);
-        surface.style.setProperty('--shine-peak-glow', peakSpot.glow.toFixed(3));
-        surface.style.setProperty('--shine-trough-glow', troughSpot.glow.toFixed(3));
-        surface.style.setProperty('--wave-glow', waveGlow.toFixed(3));
-    }
-
-    function updateSearchFormHighlights(now = performance.now()) {
-        if (!searchForm) return;
-
-        const viewportWidth = canvas.clientWidth || window.innerWidth;
-        const viewportHeight = canvas.clientHeight || window.innerHeight;
-        const minSide = Math.min(viewportWidth, viewportHeight);
-        if (!viewportWidth || !viewportHeight || !minSide) return;
-
-        document.querySelectorAll(waveSurfaceSelector).forEach((surface) => {
-            updateWaveSurface(surface, now, viewportWidth, viewportHeight);
+    function syncBackgroundButton() {
+        const current = BACKGROUND_MODES.find((item) => item.id === backgroundMode) || BACKGROUND_MODES[0];
+        const label = '\u80cc\u666f\uff1a' + current.name;
+        backgroundLabel.textContent = label;
+        toggleBackgroundButton.setAttribute('aria-label', label);
+        toggleBackgroundButton.title = label;
+        const icon = toggleBackgroundButton.querySelector('i');
+        if (icon) icon.className = `fas ${current.icon}`;
+        backgroundOptions.querySelectorAll('.background-option').forEach((option) => {
+            const selected = option.dataset.mode === backgroundMode;
+            option.classList.toggle('selected', selected);
+            option.setAttribute('aria-checked', String(selected));
         });
     }
 
-    function renderShader(now) {
-        if (!shaderRefs) return;
-
-        resizeShader();
-        const { gl, program, positionBuffer, positionLocation, uniforms } = shaderRefs;
-        const settings = backgroundSettings;
-
-        gl.useProgram(program);
-        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-        gl.enableVertexAttribArray(positionLocation);
-        gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
-        gl.uniform2f(uniforms.resolution, canvas.width, canvas.height);
-        gl.uniform1f(uniforms.time, now * 0.001 * settings.speed);
-        gl.uniform1f(uniforms.xScale, settings.xScale);
-        gl.uniform1f(uniforms.yScale, settings.yScale);
-        gl.uniform1f(uniforms.distortion, settings.distortion);
-        gl.uniform1f(uniforms.bandSize, settings.bandSize);
-        gl.uniform1f(uniforms.glow, settings.glow);
-        gl.uniform1f(uniforms.darkness, settings.darkness);
-        gl.uniform1f(uniforms.bandType, settings.type === 'ring' ? 1 : 0);
-        gl.drawArrays(gl.TRIANGLES, 0, 6);
-        updateSearchFormHighlights(now);
-
-        if (!prefersReducedMotion.matches) {
-            requestAnimationFrame(renderShader);
-        }
+    function selectBackground(nextMode) {
+        if (!BACKGROUND_MODES.some((item) => item.id === nextMode)) return;
+        backgroundMode = nextMode;
+        localStorage.setItem(STORAGE.backgroundMode, backgroundMode);
+        if (backgroundRenderer) backgroundRenderer.setMode(backgroundMode);
+        syncBackgroundButton();
     }
 
-    function readBackgroundSettings() {
-        try {
-            const stored = JSON.parse(localStorage.getItem(STORAGE.background) || '{}');
-            if (localStorage.getItem(STORAGE.backgroundPresetVersion) !== BACKGROUND_PRESET_VERSION) {
-                const defaults = getDefaultRingBackground();
-                localStorage.setItem(STORAGE.background, JSON.stringify(defaults));
-                localStorage.setItem(STORAGE.backgroundPresetVersion, BACKGROUND_PRESET_VERSION);
-                return defaults;
-            }
-
-            return normalizeBackgroundSettings(stored);
-        } catch (error) {
-            const defaults = getDefaultRingBackground();
-            localStorage.setItem(STORAGE.background, JSON.stringify(defaults));
-            localStorage.setItem(STORAGE.backgroundPresetVersion, BACKGROUND_PRESET_VERSION);
-            return defaults;
-        }
+    function renderBackgroundOptions() {
+        backgroundOptions.innerHTML = BACKGROUND_MODES.map((item) => `
+            <button class="background-option${item.id === backgroundMode ? ' selected' : ''}" type="button"
+                role="radio" aria-checked="${item.id === backgroundMode}" data-mode="${item.id}">
+                <span class="background-option-icon"><i class="fas ${item.icon}" aria-hidden="true"></i></span>
+                <span class="background-option-name">${item.name}</span>
+                <i class="fas fa-check background-option-check" aria-hidden="true"></i>
+            </button>
+        `).join('');
     }
 
-    function getDefaultRingBackground() {
-        return { ...DEFAULT_RING_BACKGROUND };
+    function openBackgroundPicker() {
+        renderBackgroundOptions();
+        backgroundPicker.classList.add('active');
+        backgroundPicker.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('background-picker-open');
+        settingsMenu.classList.remove('active');
+        settingsMenu.setAttribute('aria-hidden', 'true');
+        settingsButton.classList.remove('active');
+        requestAnimationFrame(() => backgroundOptions.querySelector('.selected')?.focus());
     }
 
-    function normalizeBackgroundSettings(settings) {
-        return Object.keys(DEFAULT_BACKGROUND).reduce((result, key) => {
-            if (key === 'type') {
-                result.type = BACKGROUND_TYPES.includes(settings.type) ? settings.type : DEFAULT_BACKGROUND.type;
-                return result;
-            }
-
-            const value = Number(settings[key]);
-            result[key] = Number.isFinite(value) ? value : DEFAULT_BACKGROUND[key];
-            return result;
-        }, {});
-    }
-
-    function syncBackgroundInputs() {
-        Object.keys(backgroundInputs).forEach((key) => {
-            backgroundInputs[key].value = String(backgroundSettings[key]);
-        });
-        syncBackgroundTypeButton();
-    }
-
-    function syncBackgroundTypeButton() {
-        if (!toggleBandTypeButton || !bandTypeLabel) return;
-
-        const isRing = backgroundSettings.type === 'ring';
-        const label = '\u8272\u5e26\u7c7b\u578b\uff1a' + (isRing ? '\u73af\u5f62' : '\u6ce2\u6d6a');
-        bandTypeLabel.textContent = label;
-        toggleBandTypeButton.setAttribute('aria-label', label);
-        toggleBandTypeButton.title = label;
-    }
-
-    function persistBackgroundSettings() {
-        localStorage.setItem(STORAGE.background, JSON.stringify(backgroundSettings));
-        localStorage.setItem(STORAGE.backgroundPresetVersion, BACKGROUND_PRESET_VERSION);
-    }
-
-    function resetBackgroundSettings() {
-        backgroundSettings = getDefaultRingBackground();
-        syncBackgroundInputs();
-        persistBackgroundSettings();
-        updateSearchFormHighlights();
-    }
-
-    function toggleBackgroundType() {
-        if (backgroundSettings.type === 'ring') {
-            backgroundSettings.type = 'wave';
-        } else {
-            backgroundSettings = getDefaultRingBackground();
-            syncBackgroundInputs();
-        }
-
-        syncBackgroundTypeButton();
-        persistBackgroundSettings();
-        updateSearchFormHighlights();
+    function closeBackgroundPicker() {
+        backgroundPicker.classList.remove('active');
+        backgroundPicker.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('background-picker-open');
     }
 
     function setDefaultSearchEngine(engine, animate = false) {
@@ -844,12 +410,12 @@
 
         shortcuts.forEach((shortcut, index) => {
             const button = document.createElement('button');
-            button.className = `liquid-button nav-button${shortcutEditMode ? ' shortcut-editing' : ''}${index === selectedShortcutIndex ? ' selected' : ''}`;
+            button.className = `nav-button${shortcutEditMode ? ' shortcut-editing' : ''}${index === selectedShortcutIndex ? ' selected' : ''}`;
             button.type = 'button';
             button.title = shortcut.title;
             button.dataset.index = String(index);
             button.style.animationDelay = `${index * 70}ms`;
-            button.innerHTML = `<span class="liquid-label"><i class="${escapeAttribute(shortcut.icon)}" aria-hidden="true"></i></span>`;
+            button.innerHTML = `<span class="control-label"><i class="${escapeAttribute(shortcut.icon)}" aria-hidden="true"></i></span>`;
 
             if (shortcutEditMode) {
                 button.draggable = true;
@@ -880,10 +446,10 @@
 
         if (shortcutEditMode) {
             const addButton = document.createElement('button');
-            addButton.className = 'liquid-button nav-button shortcut-editing shortcut-add-button';
+            addButton.className = 'nav-button shortcut-editing shortcut-add-button';
             addButton.type = 'button';
             addButton.title = '添加入口';
-            addButton.innerHTML = '<span class="liquid-label"><i class="fas fa-plus" aria-hidden="true"></i></span>';
+            addButton.innerHTML = '<span class="control-label"><i class="fas fa-plus" aria-hidden="true"></i></span>';
             addButton.addEventListener('click', addShortcut);
             shortcutButtons.appendChild(addButton);
         }
@@ -1037,7 +603,6 @@
 
         document.addEventListener('mouseleave', () => {
             searchForm.style.transform = 'rotateX(0deg) rotateY(0deg)';
-            updateSearchFormHighlights();
         });
     }
 
@@ -1050,7 +615,6 @@
         const rotateX = clamp(-((lastMouseEvent.clientY - centerY) / (window.innerHeight / 2)) * 7, -7, 7);
         const rotateY = clamp(((lastMouseEvent.clientX - centerX) / (window.innerWidth / 2)) * 10, -10, 10);
         searchForm.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-        updateSearchFormHighlights();
         tiltFrame = 0;
     }
 
@@ -1067,6 +631,10 @@
     });
 
     document.addEventListener('click', (event) => {
+        if (backgroundPicker.classList.contains('active') && !event.target.closest('.background-picker') && !event.target.closest('#toggleBackgroundBtn')) {
+            closeBackgroundPicker();
+        }
+
         if (!event.target.closest('.settings-container')) {
             settingsMenu.classList.remove('active');
             settingsMenu.setAttribute('aria-hidden', 'true');
@@ -1088,17 +656,22 @@
     document.getElementById('toggleEngineBtn').addEventListener('click', toggleSearchEngine);
     document.getElementById('editShortcutsBtn').addEventListener('click', openShortcutEditor);
     document.getElementById('finishShortcutEditBtn').addEventListener('click', exitShortcutEditMode);
-    toggleBandTypeButton.addEventListener('click', toggleBackgroundType);
-    document.getElementById('resetBackgroundBtn').addEventListener('click', resetBackgroundSettings);
-    searchLogo.addEventListener('click', toggleSearchEngine);
-
-    Object.keys(backgroundInputs).forEach((key) => {
-        backgroundInputs[key].addEventListener('input', (event) => {
-            backgroundSettings[key] = Number(event.target.value);
-            persistBackgroundSettings();
-            updateSearchFormHighlights();
-        });
+    toggleBackgroundButton.addEventListener('click', (event) => {
+        event.stopPropagation();
+        openBackgroundPicker();
     });
+    closeBackgroundPickerButton.addEventListener('click', closeBackgroundPicker);
+    backgroundOptions.addEventListener('click', (event) => {
+        const option = event.target.closest('.background-option');
+        if (option) selectBackground(option.dataset.mode);
+    });
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && backgroundPicker.classList.contains('active')) {
+            closeBackgroundPicker();
+            toggleBackgroundButton.focus();
+        }
+    });
+    searchLogo.addEventListener('click', toggleSearchEngine);
 
     searchInput.addEventListener('focus', () => {
         searchForm.classList.add('focus');
@@ -1210,7 +783,7 @@
         }
     });
 
-    syncBackgroundInputs();
+    syncBackgroundButton();
     localStorage.setItem(STORAGE.pageVersion, 'v2');
     setDefaultSearchEngine(currentEngine);
     renderShortcuts();
@@ -1220,5 +793,4 @@
     renderIconOptions();
     initShader();
     initSearchTilt();
-    updateSearchFormHighlights();
 }());
