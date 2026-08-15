@@ -6,6 +6,10 @@
   height: 100%;
 }
 
+#reactBitsBackgroundRoot {
+  pointer-events: auto;
+}
+
 #reactBitsBackgroundRoot canvas {
   display: block;
 }

@@ -16,17 +16,17 @@ import LegacyBand from './backgrounds/LegacyBand';
 import './background-root.css';
 
 const MODES = [
-  { id: 'rays', name: '\u5149\u7ebf', icon: 'fa-sun', Component: LightRays, props: { raysOrigin: 'top-center', raysColor: '#ffffff', raysSpeed: 1, lightSpread: 0.5, rayLength: 3, fadeDistance: 1, mouseInfluence: 0.1 } },
+  { id: 'rays', name: '\u5149\u7ebf', icon: 'fa-sun', Component: LightRays, props: { raysOrigin: 'top-center', raysColor: '#ffffff', raysSpeed: 1, lightSpread: 0.5, rayLength: 3, fadeDistance: 1, followMouse: true, mouseInfluence: 0.16 } },
   { id: 'band', name: '\u5149\u5e26', icon: 'fa-circle-notch', Component: LegacyBand, props: {} },
-  { id: 'pixel-blast', name: 'Pixel Blast', icon: 'fa-braille', Component: PixelBlast, props: { color: '#B497CF' } },
-  { id: 'color-bends', name: 'Color Bends', icon: 'fa-wave-square', Component: ColorBends, props: {} },
-  { id: 'plasma', name: 'Plasma', icon: 'fa-fire-flame-curved', Component: Plasma, props: { color: '#B497CF' } },
-  { id: 'liquid-ether', name: 'Liquid Ether', icon: 'fa-water', Component: LiquidEther, props: {} },
-  { id: 'liquid-chrome', name: 'Liquid Chrome', icon: 'fa-droplet', Component: LiquidChrome, props: {} },
-  { id: 'shape-grid', name: 'Shape Grid', icon: 'fa-grip', Component: ShapeGrid, props: { borderColor: '#6b7280', hoverFillColor: '#d1d5db', hoverTrailAmount: 3 } },
-  { id: 'ballpit', name: 'Ballpit', icon: 'fa-circle', Component: Ballpit, props: {} },
-  { id: 'dot-grid', name: 'Dot Grid', icon: 'fa-ellipsis', Component: DotGrid, props: {} },
-  { id: 'galaxy', name: 'Galaxy', icon: 'fa-star', Component: Galaxy, props: {} },
+  { id: 'pixel-blast', name: 'Pixel Blast', icon: 'fa-braille', Component: PixelBlast, props: { color: '#B497CF', enableRipples: true, liquid: true, liquidStrength: 0.12 } },
+  { id: 'color-bends', name: 'Color Bends', icon: 'fa-wave-square', Component: ColorBends, props: { mouseInfluence: 1.25, parallax: 0.7 } },
+  { id: 'plasma', name: 'Plasma', icon: 'fa-fire-flame-curved', Component: Plasma, props: { color: '#B497CF', mouseInteractive: true } },
+  { id: 'liquid-ether', name: 'Liquid Ether', icon: 'fa-water', Component: LiquidEther, props: { mouseForce: 24, autoDemo: true } },
+  { id: 'liquid-chrome', name: 'Liquid Chrome', icon: 'fa-droplet', Component: LiquidChrome, props: { interactive: true } },
+  { id: 'shape-grid', name: 'Shape Grid', icon: 'fa-grip', Component: ShapeGrid, props: { borderColor: '#6b7280', hoverFillColor: '#d1d5db', hoverTrailAmount: 4 } },
+  { id: 'ballpit', name: 'Ballpit', icon: 'fa-circle', Component: Ballpit, props: { followCursor: true } },
+  { id: 'dot-grid', name: 'Dot Grid', icon: 'fa-ellipsis', Component: DotGrid, props: { proximity: 175, shockStrength: 6 } },
+  { id: 'galaxy', name: 'Galaxy', icon: 'fa-star', Component: Galaxy, props: { mouseInteraction: true, mouseRepulsion: true, repulsionStrength: 2.5 } },
   { id: 'lightning', name: 'Lightning', icon: 'fa-bolt', Component: Lightning, props: {} },
   { id: 'aurora', name: 'Aurora', icon: 'fa-rainbow', Component: Aurora, props: {} }
 ];

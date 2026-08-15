@@ -98,10 +98,10 @@ Error generating stack: `+u.message+`
 #endif`,Vb=`#ifdef USE_AOMAP
 	float ambientOcclusion = ( texture2D( aoMap, vAoMapUv ).r - 1.0 ) * aoMapIntensity + 1.0;
 	reflectedLight.indirectDiffuse *= ambientOcclusion;
-	#if defined( USE_CLEARCOAT )
+	#if defined( USE_CLEARCOAT ) 
 		clearcoatSpecularIndirect *= ambientOcclusion;
 	#endif
-	#if defined( USE_SHEEN )
+	#if defined( USE_SHEEN ) 
 		sheenSpecularIndirect *= ambientOcclusion;
 	#endif
 	#if defined( USE_ENVMAP ) && defined( STANDARD )
@@ -586,7 +586,7 @@ vec4 sRGBTransferOETF( in vec4 value ) {
 	#else
 		uniform sampler2D envMap;
 	#endif
-
+	
 #endif`,gA=`#ifdef USE_ENVMAP
 	uniform float reflectivity;
 	#if defined( USE_BUMPMAP ) || defined( USE_NORMALMAP ) || defined( PHONG ) || defined( LAMBERT )
@@ -603,7 +603,7 @@ vec4 sRGBTransferOETF( in vec4 value ) {
 		#define ENV_WORLDPOS
 	#endif
 	#ifdef ENV_WORLDPOS
-
+		
 		varying vec3 vWorldPosition;
 	#else
 		varying vec3 vReflect;
@@ -1861,7 +1861,7 @@ gl_Position = projectionMatrix * mvPosition;`,d2=`#ifdef DITHERING
 	float getPointShadow( sampler2D shadowMap, vec2 shadowMapSize, float shadowIntensity, float shadowBias, float shadowRadius, vec4 shadowCoord, float shadowCameraNear, float shadowCameraFar ) {
 		float shadow = 1.0;
 		vec3 lightToPosition = shadowCoord.xyz;
-
+		
 		float lightToPositionLength = length( lightToPosition );
 		if ( lightToPositionLength - shadowCameraFar <= 0.0 && lightToPositionLength - shadowCameraNear >= 0.0 ) {
 			float dp = ( lightToPositionLength - shadowCameraNear ) / ( shadowCameraFar - shadowCameraNear );			dp += shadowBias;
@@ -4996,4 +4996,4 @@ void main() {
     float vignette = 1.0 - smoothstep(0.68, 1.9, length(p)) * 0.38;
     gl_FragColor = vec4(color * vignette, 1.0);
   }
-`;function Qy(r,e,t){const i=r.createShader(e);return r.shaderSource(i,t),r.compileShader(i),r.getShaderParameter(i,r.COMPILE_STATUS)?i:(r.deleteShader(i),null)}function dU(){const r=Le.useRef(null);return Le.useEffect(()=>{const e=r.current,t=e?.getContext("webgl",{antialias:!1,alpha:!1});if(!t)return;const i=Qy(t,t.VERTEX_SHADER,fU),a=Qy(t,t.FRAGMENT_SHADER,hU);if(!i||!a)return;const l=t.createProgram();if(t.attachShader(l,i),t.attachShader(l,a),t.linkProgram(l),!t.getProgramParameter(l,t.LINK_STATUS))return;const c=t.createBuffer();t.bindBuffer(t.ARRAY_BUFFER,c),t.bufferData(t.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,-1,-1,1,1,1]),t.STATIC_DRAW);const f=t.getAttribLocation(l,"position"),h=t.getUniformLocation(l,"resolution"),d=t.getUniformLocation(l,"time"),p=window.matchMedia("(prefers-reduced-motion: reduce)").matches;let _=0;const x=()=>{const E=Math.min(window.devicePixelRatio||1,2),S=Math.max(1,Math.floor(e.clientWidth*E)),M=Math.max(1,Math.floor(e.clientHeight*E));(e.width!==S||e.height!==M)&&(e.width=S,e.height=M,t.viewport(0,0,S,M))},v=E=>{x(),t.useProgram(l),t.bindBuffer(t.ARRAY_BUFFER,c),t.enableVertexAttribArray(f),t.vertexAttribPointer(f,2,t.FLOAT,!1,0,0),t.uniform2f(h,e.width,e.height),t.uniform1f(d,E*.001*.17),t.drawArrays(t.TRIANGLES,0,6),p||(_=requestAnimationFrame(v))};return _=requestAnimationFrame(v),()=>{cancelAnimationFrame(_),t.deleteBuffer(c),t.deleteProgram(l),t.deleteShader(i),t.deleteShader(a)}},[]),qn.jsx("canvas",{ref:r,className:"legacy-band-canvas"})}const vf=[{id:"rays",name:"光线",icon:"fa-sun",Component:uU,props:{raysOrigin:"top-center",raysColor:"#ffffff",raysSpeed:1,lightSpread:.5,rayLength:3,fadeDistance:1,mouseInfluence:.1}},{id:"band",name:"光带",icon:"fa-circle-notch",Component:dU,props:{}},{id:"pixel-blast",name:"Pixel Blast",icon:"fa-braille",Component:NC,props:{color:"#B497CF"}},{id:"color-bends",name:"Color Bends",icon:"fa-wave-square",Component:zC,props:{}},{id:"plasma",name:"Plasma",icon:"fa-fire-flame-curved",Component:cD,props:{color:"#B497CF"}},{id:"liquid-ether",name:"Liquid Ether",icon:"fa-water",Component:uD,props:{}},{id:"liquid-chrome",name:"Liquid Chrome",icon:"fa-droplet",Component:fD,props:{}},{id:"shape-grid",name:"Shape Grid",icon:"fa-grip",Component:hD,props:{borderColor:"#6b7280",hoverFillColor:"#d1d5db",hoverTrailAmount:3}},{id:"ballpit",name:"Ballpit",icon:"fa-circle",Component:TD,props:{}},{id:"dot-grid",name:"Dot Grid",icon:"fa-ellipsis",Component:tU,props:{}},{id:"galaxy",name:"Galaxy",icon:"fa-star",Component:rU,props:{}},{id:"lightning",name:"Lightning",icon:"fa-bolt",Component:sU,props:{}},{id:"aurora",name:"Aurora",icon:"fa-rainbow",Component:lU,props:{}}];function pU(r,e){const t=VE.createRoot(r);let i=e;function a(){const l=vf.find(c=>c.id===i)||vf[0];t.render(qn.jsx(l.Component,{...l.props},l.id))}return a(),{setMode(l){vf.some(c=>c.id===l)&&(i=l,a())},destroy(){t.unmount()}}}window.ReactBitsBackgrounds={modes:vf.map(({Component:r,props:e,...t})=>t),create:pU}})();
+`;function Qy(r,e,t){const i=r.createShader(e);return r.shaderSource(i,t),r.compileShader(i),r.getShaderParameter(i,r.COMPILE_STATUS)?i:(r.deleteShader(i),null)}function dU(){const r=Le.useRef(null);return Le.useEffect(()=>{const e=r.current,t=e?.getContext("webgl",{antialias:!1,alpha:!1});if(!t)return;const i=Qy(t,t.VERTEX_SHADER,fU),a=Qy(t,t.FRAGMENT_SHADER,hU);if(!i||!a)return;const l=t.createProgram();if(t.attachShader(l,i),t.attachShader(l,a),t.linkProgram(l),!t.getProgramParameter(l,t.LINK_STATUS))return;const c=t.createBuffer();t.bindBuffer(t.ARRAY_BUFFER,c),t.bufferData(t.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,-1,-1,1,1,1]),t.STATIC_DRAW);const f=t.getAttribLocation(l,"position"),h=t.getUniformLocation(l,"resolution"),d=t.getUniformLocation(l,"time"),p=window.matchMedia("(prefers-reduced-motion: reduce)").matches;let _=0;const x=()=>{const E=Math.min(window.devicePixelRatio||1,2),S=Math.max(1,Math.floor(e.clientWidth*E)),M=Math.max(1,Math.floor(e.clientHeight*E));(e.width!==S||e.height!==M)&&(e.width=S,e.height=M,t.viewport(0,0,S,M))},v=E=>{x(),t.useProgram(l),t.bindBuffer(t.ARRAY_BUFFER,c),t.enableVertexAttribArray(f),t.vertexAttribPointer(f,2,t.FLOAT,!1,0,0),t.uniform2f(h,e.width,e.height),t.uniform1f(d,E*.001*.17),t.drawArrays(t.TRIANGLES,0,6),p||(_=requestAnimationFrame(v))};return _=requestAnimationFrame(v),()=>{cancelAnimationFrame(_),t.deleteBuffer(c),t.deleteProgram(l),t.deleteShader(i),t.deleteShader(a)}},[]),qn.jsx("canvas",{ref:r,className:"legacy-band-canvas"})}const vf=[{id:"rays",name:"光线",icon:"fa-sun",Component:uU,props:{raysOrigin:"top-center",raysColor:"#ffffff",raysSpeed:1,lightSpread:.5,rayLength:3,fadeDistance:1,followMouse:!0,mouseInfluence:.16}},{id:"band",name:"光带",icon:"fa-circle-notch",Component:dU,props:{}},{id:"pixel-blast",name:"Pixel Blast",icon:"fa-braille",Component:NC,props:{color:"#B497CF",enableRipples:!0,liquid:!0,liquidStrength:.12}},{id:"color-bends",name:"Color Bends",icon:"fa-wave-square",Component:zC,props:{mouseInfluence:1.25,parallax:.7}},{id:"plasma",name:"Plasma",icon:"fa-fire-flame-curved",Component:cD,props:{color:"#B497CF",mouseInteractive:!0}},{id:"liquid-ether",name:"Liquid Ether",icon:"fa-water",Component:uD,props:{mouseForce:24,autoDemo:!0}},{id:"liquid-chrome",name:"Liquid Chrome",icon:"fa-droplet",Component:fD,props:{interactive:!0}},{id:"shape-grid",name:"Shape Grid",icon:"fa-grip",Component:hD,props:{borderColor:"#6b7280",hoverFillColor:"#d1d5db",hoverTrailAmount:4}},{id:"ballpit",name:"Ballpit",icon:"fa-circle",Component:TD,props:{followCursor:!0}},{id:"dot-grid",name:"Dot Grid",icon:"fa-ellipsis",Component:tU,props:{proximity:175,shockStrength:6}},{id:"galaxy",name:"Galaxy",icon:"fa-star",Component:rU,props:{mouseInteraction:!0,mouseRepulsion:!0,repulsionStrength:2.5}},{id:"lightning",name:"Lightning",icon:"fa-bolt",Component:sU,props:{}},{id:"aurora",name:"Aurora",icon:"fa-rainbow",Component:lU,props:{}}];function pU(r,e){const t=VE.createRoot(r);let i=e;function a(){const l=vf.find(c=>c.id===i)||vf[0];t.render(qn.jsx(l.Component,{...l.props},l.id))}return a(),{setMode(l){vf.some(c=>c.id===l)&&(i=l,a())},destroy(){t.unmount()}}}window.ReactBitsBackgrounds={modes:vf.map(({Component:r,props:e,...t})=>t),create:pU}})();
